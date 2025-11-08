@@ -15,11 +15,13 @@ interface Event {
   category: string
   isFree?: boolean
   organizer?: string
+  organizationSlug?: string
   imageUrl?: string
 }
 
 interface EventListProps {
   events?: Event[]
+  schoolSlug?: string
   onEventClick?: (eventId: string) => void
   className?: string
   isOpen?: boolean
@@ -75,6 +77,7 @@ const DEMO_EVENTS: Event[] = [
 
 export function EventList({
   events = DEMO_EVENTS,
+  schoolSlug,
   onEventClick,
   className,
   isOpen = true,
@@ -83,33 +86,38 @@ export function EventList({
   return (
     <div
       className={cn(
-        'bg-background border-l p-4 overflow-y-auto h-full',
+        'bg-background border-l overflow-y-auto h-full custom-scrollbar',
         'w-96 max-w-[90vw] flex-shrink-0',
         !isOpen && 'hidden',
         className
       )}
     >
       {showHeader && (
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <List className="w-5 h-5" />
-            Events ({events.length})
+        <div className="px-4 pt-4 pb-3 border-b">
+          <h2 className="text-xl font-bold">
+            Events
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">Showing events in current map area</p>
         </div>
       )}
 
       {events.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>No events found in this area</p>
-          <p className="text-sm mt-2">Try adjusting your filters or map view</p>
+        <div className="text-center py-12 px-4">
+          <p className="text-sm text-muted-foreground">No events found</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Try adjusting your filters or map view
+          </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className=" pb-4">
+          {/* Today / Monday */}
+          <div className="pt-6 pb-3">
+            <h3 className="text-base font-bold">Today / Monday</h3>
+          </div>
           {events.map((event) => (
             <EventCard
               key={event.id}
               {...event}
+              schoolSlug={schoolSlug}
               onClick={() => onEventClick?.(event.id)}
             />
           ))}

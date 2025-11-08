@@ -17,6 +17,7 @@ export interface MapMarker {
   title: string
   category?: string
   color?: string
+  type?: 'school' | 'club' // New: distinguish event types
 }
 
 export interface MapConfig {

@@ -52,7 +52,7 @@ export const COLUMBIA_DEMO_MARKERS = [
     latitude: 40.8075,
     title: 'Butler Library Event',
     category: 'academic',
-    color: '#1E40AF',
+    type: 'school' as const,
   },
   {
     id: '2',
@@ -60,7 +60,7 @@ export const COLUMBIA_DEMO_MARKERS = [
     latitude: 40.8080,
     title: 'Lerner Hall Social',
     category: 'social',
-    color: '#DC2626',
+    type: 'club' as const,
   },
   {
     id: '3',
@@ -68,7 +68,7 @@ export const COLUMBIA_DEMO_MARKERS = [
     latitude: 40.8070,
     title: 'SEAS Career Fair',
     category: 'career',
-    color: '#059669',
+    type: 'school' as const,
   },
   {
     id: '4',
@@ -76,7 +76,7 @@ export const COLUMBIA_DEMO_MARKERS = [
     latitude: 40.8065,
     title: 'Miller Theatre Concert',
     category: 'arts',
-    color: '#7C3AED',
+    type: 'club' as const,
   },
 ]
 

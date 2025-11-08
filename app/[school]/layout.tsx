@@ -5,15 +5,16 @@ import type { Metadata } from 'next'
 
 interface SchoolLayoutProps {
   children: React.ReactNode
-  params: { school: string }
+  params: Promise<{ school: string }>
 }
 
 export async function generateMetadata({ 
   params 
 }: { 
-  params: { school: string } 
+  params: Promise<{ school: string }>
 }): Promise<Metadata> {
-  const school = getSchoolBySlug(params.school)
+  const { school: schoolSlug } = await params
+  const school = getSchoolBySlug(schoolSlug)
   
   if (!school) {
     return { title: 'School Not Found' }
@@ -25,8 +26,9 @@ export async function generateMetadata({
   }
 }
 
-export default function SchoolLayout({ children, params }: SchoolLayoutProps) {
-  const school = getSchoolBySlug(params.school)
+export default async function SchoolLayout({ children, params }: SchoolLayoutProps) {
+  const { school: schoolSlug } = await params
+  const school = getSchoolBySlug(schoolSlug)
   
   if (!school) {
     notFound()

@@ -3,6 +3,8 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react'
 import Map, { Marker, NavigationControl, MapRef } from 'react-map-gl/mapbox'
 import { IMapProvider, MapBounds, MapViewState } from '../map-types'
+import { Button } from '@/components/ui/button'
+import { RotateCcw } from 'lucide-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 export function MapboxAdapter({
@@ -40,6 +42,11 @@ export function MapboxAdapter({
     pitch: 0,
     bearing: initialBearing,
   })
+
+  // Expose viewState to window for mobile recenter button
+  useEffect(() => {
+    ;(window as any).__mapViewState = viewState
+  }, [viewState])
 
   const [showRecenter, setShowRecenter] = useState(false)
 
@@ -97,38 +104,32 @@ export function MapboxAdapter({
       minPitch={0}
       dragRotate={true}
     >
-      <NavigationControl position="top-right" showCompass={true} />
+      <NavigationControl position="top-right" showCompass={false} showZoom={false} />
       
-      {/* Recenter button - only show when off-center */}
+      {/* Recenter button - only show when off-center and on desktop */}
       {showRecenter && (
-        <div className="absolute top-4 left-4 z-10">
-          <button
+        <div className="hidden lg:block absolute top-4 left-4 z-10">
+          <Button
             onClick={handleRecenter}
-            className="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-3 md:px-4 rounded-md shadow-md border border-gray-200 transition-all flex items-center gap-2"
+            variant="secondary"
+            size="sm"
+            className="shadow-lg gap-2 rounded-full"
             title="Return to Campus"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
+            <RotateCcw className="w-4 h-4" />
             <span className="hidden sm:inline">Recenter</span>
-          </button>
+          </Button>
         </div>
       )}
       
-      {markers.map((marker) => {
+      {markers.map((marker, index) => {
         const isUserLocation = marker.id === 'user-location'
-        
+
+        // Color coding: school events = blue, club events = orange
+        const markerColor = marker.type === 'school'
+          ? '#1E40AF'  // School blue
+          : '#F97316'   // Club orange
+
         return (
           <Marker
             key={marker.id}
@@ -143,30 +144,94 @@ export function MapboxAdapter({
           >
             {isUserLocation ? (
               <div className="relative">
+                {/* Pulsing outer ring */}
+                <div className="absolute -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-blue-500/20 animate-ping" />
+                {/* Main dot */}
                 <div
-                  className="absolute -translate-x-1/2 -translate-y-1/2"
+                  className="absolute -translate-x-1/2 -translate-y-1/2 animate-pulse"
                   style={{
-                    width: '16px',
-                    height: '16px',
+                    width: '20px',
+                    height: '20px',
                     borderRadius: '50%',
                     backgroundColor: '#3B82F6',
                     border: '3px solid white',
-                    boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.3), 0 2px 4px rgba(0,0,0,0.3)',
+                    boxShadow: '0 0 0 6px rgba(59, 130, 246, 0.3), 0 6px 12px rgba(0,0,0,0.3)',
                   }}
                 />
               </div>
             ) : (
               <div
-                className="cursor-pointer transition-transform hover:scale-110"
+                className="cursor-pointer group relative"
                 style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  backgroundColor: marker.color || '#1E40AF',
-                  border: '2px solid white',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  animation: `markerPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) ${index * 0.05}s backwards`
                 }}
-              />
+              >
+                {/* Hover glow effect */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    filter: 'blur(8px)',
+                    background: markerColor,
+                    transform: 'scale(1.2)',
+                  }}
+                />
+
+                {/* Main marker SVG */}
+                <svg
+                  width="36"
+                  height="44"
+                  viewBox="0 0 36 44"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="relative group-hover:scale-125 group-hover:-translate-y-2 transition-all duration-300 drop-shadow-lg"
+                >
+                  {/* Shadow */}
+                  <ellipse
+                    cx="18"
+                    cy="42"
+                    rx="6"
+                    ry="2"
+                    fill="black"
+                    opacity="0.2"
+                    className="group-hover:opacity-30 transition-opacity"
+                  />
+
+                  {/* Pin shape with gradient */}
+                  <defs>
+                    <linearGradient id={`gradient-${marker.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor={markerColor} stopOpacity="1" />
+                      <stop offset="100%" stopColor={markerColor} stopOpacity="0.85" />
+                    </linearGradient>
+                  </defs>
+
+                  <path
+                    d="M18 2C9.716 2 3 8.716 3 17c0 12.5 15 23 15 23s15-10.5 15-23c0-8.284-6.716-15-15-15z"
+                    fill={`url(#gradient-${marker.id})`}
+                    stroke="white"
+                    strokeWidth="3"
+                    className="group-hover:stroke-2"
+                  />
+
+                  {/* Inner dot */}
+                  <circle
+                    cx="18"
+                    cy="17"
+                    r="6"
+                    fill="white"
+                    opacity="0.95"
+                    className="group-hover:r-7 transition-all"
+                  />
+
+                  {/* Center dot */}
+                  <circle
+                    cx="18"
+                    cy="17"
+                    r="3"
+                    fill={markerColor}
+                    opacity="0.6"
+                  />
+                </svg>
+              </div>
             )}
           </Marker>
         )

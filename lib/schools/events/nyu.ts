@@ -52,7 +52,7 @@ export const NYU_DEMO_MARKERS = [
     latitude: 40.7295,
     title: 'Bobst Library Event',
     category: 'academic',
-    color: '#57068C',
+    type: 'school' as const,
   },
   {
     id: 'nyu-2',
@@ -60,7 +60,7 @@ export const NYU_DEMO_MARKERS = [
     latitude: 40.7300,
     title: 'Kimmel Game Night',
     category: 'social',
-    color: '#57068C',
+    type: 'club' as const,
   },
   {
     id: 'nyu-3',
@@ -68,7 +68,7 @@ export const NYU_DEMO_MARKERS = [
     latitude: 40.7290,
     title: 'Stern Workshop',
     category: 'career',
-    color: '#57068C',
+    type: 'school' as const,
   },
   {
     id: 'nyu-4',
@@ -76,7 +76,7 @@ export const NYU_DEMO_MARKERS = [
     latitude: 40.7285,
     title: 'Tisch Screening',
     category: 'arts',
-    color: '#57068C',
+    type: 'club' as const,
   },
 ]
 
