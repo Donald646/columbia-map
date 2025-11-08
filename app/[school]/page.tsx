@@ -26,14 +26,20 @@ export default async function SchoolMapPage({
   // Start all queries in parallel
   const [
     { data: { user } },
-    events
+    events,
+    { data: schoolData }
   ] = await Promise.all([
     supabase.auth.getUser(),
     getEvents(params.school, {
       category: searchParams.category,
       timeRange: searchParams.time,
       isFree: searchParams.price === 'free' ? true : undefined
-    })
+    }),
+    supabase
+      .from('schools')
+      .select('name, horizontal_logo_url')
+      .eq('slug', params.school)
+      .single()
   ])
 
   // Now fetch user data if logged in (parallel)
@@ -67,6 +73,8 @@ export default async function SchoolMapPage({
       events={events}
       markers={markers}
       schoolSlug={params.school}
+      schoolName={schoolData?.name || schoolConfig.name}
+      schoolHorizontalLogo={schoolData?.horizontal_logo_url || null}
       campusCenter={schoolConfig.mapCenter}
       initialZoom={schoolConfig.mapZoom}
       initialBearing={schoolConfig.mapBearing}

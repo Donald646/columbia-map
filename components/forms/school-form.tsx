@@ -19,7 +19,9 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingHorizontalLogo, setUploadingHorizontalLogo] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
+  const horizontalLogoInputRef = useRef<HTMLInputElement>(null)
 
   const uploadFolder = useMemo(() => {
     return school?.id || `temp-${Date.now()}`
@@ -28,13 +30,17 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
   const [formData, setFormData] = useState({
     name: school?.name || '',
     slug: school?.slug || '',
-    domain: school?.domain || '',
+    domain: school?.domain || school?.email_domain || '',
     location: school?.location || '',
     description: school?.description || '',
     logo_url: school?.logo_url || null,
+    horizontal_logo_url: school?.horizontal_logo_url || null,
   })
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'logo' | 'horizontal_logo'
+  ) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -48,11 +54,12 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
       return
     }
 
-    setUploadingLogo(true)
+    const setUploading = type === 'logo' ? setUploadingLogo : setUploadingHorizontalLogo
+    setUploading(true)
 
     try {
       const supabase = createClient()
-      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '-')}`
+      const fileName = `${type}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '-')}`
       const filePath = `${uploadFolder}/${fileName}`
 
       const { error: uploadError } = await supabase.storage
@@ -67,15 +74,15 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
 
       setFormData(prev => ({
         ...prev,
-        logo_url: publicUrl
+        [type === 'logo' ? 'logo_url' : 'horizontal_logo_url']: publicUrl
       }))
 
-      toast.success('Logo uploaded successfully')
+      toast.success(`${type === 'logo' ? 'Logo' : 'Horizontal logo'} uploaded successfully`)
     } catch (error: any) {
-      console.error('Error uploading logo:', error)
-      toast.error(`Failed to upload logo: ${error.message}`)
+      console.error('Error uploading image:', error)
+      toast.error(`Failed to upload image: ${error.message}`)
     } finally {
-      setUploadingLogo(false)
+      setUploading(false)
     }
   }
 
@@ -89,10 +96,12 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
       const schoolData = {
         name: formData.name,
         slug: formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        domain: formData.domain || null,
+        domain: formData.domain,
+        email_domain: formData.domain, // Keep email_domain in sync for backward compatibility
         location: formData.location || null,
         description: formData.description || null,
         logo_url: formData.logo_url || null,
+        horizontal_logo_url: formData.horizontal_logo_url || null,
       }
 
       if (school?.id) {
@@ -128,45 +137,98 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-      {/* Hidden file input */}
+      {/* Hidden file inputs */}
       <input
         ref={logoInputRef}
         type="file"
         accept="image/*"
-        onChange={handleLogoUpload}
+        onChange={(e) => handleImageUpload(e, 'logo')}
+        className="hidden"
+      />
+      <input
+        ref={horizontalLogoInputRef}
+        type="file"
+        accept="image/*"
+        onChange={(e) => handleImageUpload(e, 'horizontal_logo')}
         className="hidden"
       />
 
-      {/* LOGO */}
-      <div className="mb-8">
-        <div className="flex justify-center">
-          <div
-            className="relative w-32 h-32 bg-background border-4 border-background rounded-2xl overflow-hidden cursor-pointer group shadow-xl"
-            onClick={() => logoInputRef.current?.click()}
-          >
-            {formData.logo_url ? (
-              <Image src={formData.logo_url} alt="Logo" fill className="object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-                <Camera className="w-12 h-12 text-muted-foreground/30" />
-              </div>
-            )}
+      {/* LOGOS - Side by side */}
+      <div className="mb-8 grid grid-cols-2 gap-6">
+        {/* Square Logo */}
+        <div>
+          <div className="flex justify-center">
+            <div
+              className="relative w-32 h-32 bg-background border-4 border-background rounded-2xl overflow-hidden cursor-pointer group shadow-xl"
+              onClick={() => logoInputRef.current?.click()}
+            >
+              {formData.logo_url ? (
+                <Image src={formData.logo_url} alt="Logo" fill className="object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                  <Camera className="w-12 h-12 text-muted-foreground/30" />
+                </div>
+              )}
 
-            {/* Upload Overlay */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-              <div className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
-                {uploadingLogo ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Camera className="w-4 h-4" />
-                )}
+              {/* Upload Overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <div className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploadingLogo ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </div>
               </div>
             </div>
           </div>
+          <p className="text-center text-sm text-muted-foreground mt-3">
+            Square Logo
+          </p>
+          <p className="text-center text-xs text-muted-foreground">
+            Used in cards & icons
+          </p>
         </div>
-        <p className="text-center text-sm text-muted-foreground mt-3">
-          Click to upload school logo
-        </p>
+
+        {/* Horizontal Logo */}
+        <div>
+          <div className="flex justify-center">
+            <div
+              className="relative w-full h-32 bg-background border-4 border-background rounded-2xl overflow-hidden cursor-pointer group shadow-xl"
+              onClick={() => horizontalLogoInputRef.current?.click()}
+            >
+              {formData.horizontal_logo_url ? (
+                <Image
+                  src={formData.horizontal_logo_url}
+                  alt="Horizontal Logo"
+                  fill
+                  className="object-contain p-4"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                  <Camera className="w-12 h-12 text-muted-foreground/30" />
+                </div>
+              )}
+
+              {/* Upload Overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <div className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploadingHorizontalLogo ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="text-center text-sm text-muted-foreground mt-3">
+            Horizontal Logo
+          </p>
+          <p className="text-center text-xs text-muted-foreground">
+            HapMap | School branding
+          </p>
+        </div>
       </div>
 
       {/* FORM FIELDS */}
@@ -204,10 +266,11 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
 
         <div className="space-y-1.5">
           <label className="text-xs text-muted-foreground uppercase tracking-wide">
-            Email Domain
+            Email Domain <span className="text-red-500">*</span>
           </label>
           <Input
             type="text"
+            required
             value={formData.domain}
             onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
             placeholder="columbia.edu"

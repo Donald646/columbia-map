@@ -13,6 +13,7 @@ import { SlidersHorizontal, List, Locate, Search, X, LogIn } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 // Dynamic import for the heavy map component
 const MapView = dynamic(
@@ -34,6 +35,8 @@ interface SchoolMapClientProps {
   events: any[]
   markers: any[]
   schoolSlug: string
+  schoolName: string
+  schoolHorizontalLogo: string | null
   campusCenter: { longitude: number; latitude: number }
   initialZoom: number
   initialBearing: number
@@ -41,7 +44,7 @@ interface SchoolMapClientProps {
   isOrgAdmin: boolean
 }
 
-export default function SchoolMapClient({ events, markers, schoolSlug, campusCenter, initialZoom, initialBearing, userRole, isOrgAdmin }: SchoolMapClientProps) {
+export default function SchoolMapClient({ events, markers, schoolSlug, schoolName, schoolHorizontalLogo, campusCenter, initialZoom, initialBearing, userRole, isOrgAdmin }: SchoolMapClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -200,9 +203,31 @@ export default function SchoolMapClient({ events, markers, schoolSlug, campusCen
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
-      <header className="hidden lg:block bg-background px-4 py-3">
+      <header className="hidden lg:block bg-background px-6 py-3 border-b">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg md:text-xl font-bold">{schoolSlug.toUpperCase()} Events</h1>
+          <div className="flex items-center gap-3">
+            <span className="text-xl font-bold">HapMap</span>
+            {schoolHorizontalLogo ? (
+              <>
+                <span className="text-muted-foreground">|</span>
+                <div className="relative h-8 w-auto max-w-[200px]">
+                  <Image
+                    src={schoolHorizontalLogo}
+                    alt={schoolName}
+                    width={200}
+                    height={32}
+                    className="object-contain h-full w-auto"
+                    priority
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-lg font-semibold">{schoolName}</span>
+              </>
+            )}
+          </div>
           {isAdmin && getDashboardUrl() && (
             <Button
               variant="default"

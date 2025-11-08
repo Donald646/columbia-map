@@ -66,9 +66,9 @@ export default async function SchoolsPage() {
                   </div>
                 )}
 
-                {school.domain && (
-                  <div className="text-sm text-muted-foreground">
-                    {school.domain}
+                {(school.domain || school.email_domain) && (
+                  <div className="text-sm text-muted-foreground font-mono">
+                    {school.domain || school.email_domain}
                   </div>
                 )}
               </div>
