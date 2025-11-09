@@ -6,6 +6,58 @@ import { formatDate, formatTime } from '@/lib/utils/transform'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { Metadata } from 'next'
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ school: string; slug: string }>
+}): Promise<Metadata> {
+  const { school: schoolSlug, slug } = await params
+
+  const [orgData, school] = await Promise.all([
+    getOrganizationBySlug(slug),
+    getSchool(schoolSlug)
+  ])
+
+  if (!orgData || !school || orgData.school_id !== school.id) {
+    return {
+      title: 'Organization Not Found',
+    }
+  }
+
+  const title = `${orgData.name} | ${school.name} | HapMap`
+  const description = orgData.description || `View events and information for ${orgData.name} at ${school.name}.`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: orgData.name,
+      description,
+      type: 'website',
+      siteName: 'HapMap',
+      ...(orgData.logo_url && {
+        images: [
+          {
+            url: orgData.logo_url,
+            width: 1200,
+            height: 630,
+            alt: orgData.name,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: 'summary',
+      title: orgData.name,
+      description,
+      ...(orgData.logo_url && {
+        images: [orgData.logo_url],
+      }),
+    },
+  }
+}
 
 export default async function OrganizationPage({
   params

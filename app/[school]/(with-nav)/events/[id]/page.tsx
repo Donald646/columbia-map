@@ -5,6 +5,79 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { getGoogleMapsUrl } from '@/lib/utils/transform'
+import { Metadata } from 'next'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ school: string; id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+
+  const { data: event } = await supabase
+    .from('events')
+    .select(`
+      title,
+      description,
+      image_url,
+      starts_at,
+      venue_name,
+      organizations (
+        name
+      )
+    `)
+    .eq('id', id)
+    .single()
+
+  if (!event) {
+    return {
+      title: 'Event Not Found',
+    }
+  }
+
+  const organizationName = Array.isArray(event.organizations)
+    ? event.organizations[0]?.name
+    : (event.organizations as { name: string } | null)?.name
+
+  const title = `${event.title} | HapMap`
+  const description = event.description || `Join us for ${event.title}${organizationName ? ` hosted by ${organizationName}` : ''}.`
+  const eventDate = event.starts_at ? new Date(event.starts_at).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : ''
+
+  return {
+    title,
+    description: `${eventDate ? eventDate + ' - ' : ''}${description}`,
+    openGraph: {
+      title: event.title,
+      description,
+      type: 'website',
+      siteName: 'HapMap',
+      ...(event.image_url && {
+        images: [
+          {
+            url: event.image_url,
+            width: 1200,
+            height: 630,
+            alt: event.title,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: event.title,
+      description,
+      ...(event.image_url && {
+        images: [event.image_url],
+      }),
+    },
+  }
+}
 
 export default async function EventPage({
   params,

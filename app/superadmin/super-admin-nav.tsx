@@ -70,7 +70,7 @@ export default function SuperAdminNav({ user, breadcrumbs: propBreadcrumbs }: Su
             {breadcrumbs && breadcrumbs.length > 0 ? (
               <div className="flex items-center gap-2 text-sm">
                 <Link href="/superadmin" className="font-semibold hover:underline">
-                  HapMap
+                  EventsCU
                 </Link>
                 {breadcrumbs.map((crumb, index) => (
                   <div key={index} className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export default function SuperAdminNav({ user, breadcrumbs: propBreadcrumbs }: Su
               </div>
             ) : (
               <Link href="/superadmin" className="font-semibold text-lg" prefetch={true}>
-                HapMap
+                EventsCU
               </Link>
             )}
 

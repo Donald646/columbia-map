@@ -5,6 +5,41 @@ import { BadgeCheck, Search } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
+import { Metadata } from 'next'
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ school: string }>
+}): Promise<Metadata> {
+  const { school: schoolSlug } = await params
+  const school = await getSchool(schoolSlug)
+
+  if (!school) {
+    return {
+      title: 'Organizations Not Found',
+    }
+  }
+
+  const title = `Organizations at ${school.name} | HapMap`
+  const description = `Discover and explore student organizations at ${school.name}. Find clubs, societies, and student groups.`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: `Organizations at ${school.name}`,
+      description,
+      type: 'website',
+      siteName: 'HapMap',
+    },
+    twitter: {
+      card: 'summary',
+      title: `Organizations at ${school.name}`,
+      description,
+    },
+  }
+}
 
 export default async function OrganizationsPage({
   params,

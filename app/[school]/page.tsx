@@ -4,18 +4,63 @@ import { getSchoolBySlug } from '@/lib/schools/config'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import SchoolMapClient from './school-map-client'
+import { Metadata } from 'next'
 
 // Revalidate every 5 minutes for fresh event data
 export const revalidate = 300
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ school: string }>
+}): Promise<Metadata> {
+  const { school } = await params
+  const schoolConfig = getSchoolBySlug(school)
+
+  if (!schoolConfig) {
+    return {
+      title: 'School Not Found',
+    }
+  }
+
+  const supabase = await createClient()
+  const { data: schoolData } = await supabase
+    .from('schools')
+    .select('name, description')
+    .eq('slug', school)
+    .single()
+
+  const schoolName = schoolData?.name || schoolConfig.name
+  const description = schoolData?.description || `Discover events happening at ${schoolName}. Find parties, club meetings, sports events, and more.`
+
+  return {
+    title: `${schoolName} Events | HapMap`,
+    description,
+    openGraph: {
+      title: `${schoolName} Events`,
+      description,
+      type: 'website',
+      siteName: 'HapMap',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${schoolName} Events`,
+      description,
+    },
+  }
+}
 
 export default async function SchoolMapPage({
   params,
   searchParams
 }: {
-  params: { school: string }
-  searchParams: { category?: string; time?: string; price?: string }
+  params: Promise<{ school: string }>
+  searchParams: Promise<{ category?: string; time?: string; price?: string }>
 }) {
-  const schoolConfig = getSchoolBySlug(params.school)
+  const { school } = await params
+  const { category, time, price } = await searchParams
+
+  const schoolConfig = getSchoolBySlug(school)
   if (!schoolConfig) {
     notFound()
   }
@@ -30,15 +75,15 @@ export default async function SchoolMapPage({
     { data: schoolData }
   ] = await Promise.all([
     supabase.auth.getUser(),
-    getEvents(params.school, {
-      category: searchParams.category,
-      timeRange: searchParams.time,
-      isFree: searchParams.price === 'free' ? true : undefined
+    getEvents(school, {
+      category: category,
+      timeRange: time,
+      isFree: price === 'free' ? true : undefined
     }),
     supabase
       .from('schools')
       .select('name, horizontal_logo_url')
-      .eq('slug', params.school)
+      .eq('slug', school)
       .single()
   ])
 
@@ -72,7 +117,7 @@ export default async function SchoolMapPage({
     <SchoolMapClient
       events={events}
       markers={markers}
-      schoolSlug={params.school}
+      schoolSlug={school}
       schoolName={schoolData?.name || schoolConfig.name}
       schoolHorizontalLogo={schoolData?.horizontal_logo_url || null}
       campusCenter={schoolConfig.mapCenter}

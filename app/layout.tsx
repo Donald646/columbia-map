@@ -15,8 +15,29 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Columbia Events Map",
-  description: "Interactive map-first directory of Columbia University events",
+  title: {
+    default: "HapMap - Campus Events Discovery",
+    template: "%s | HapMap",
+  },
+  description: "Discover campus events on an interactive map. Find parties, club meetings, sports events, and more at your school.",
+  keywords: ["college events", "university events", "campus map", "student events", "event discovery"],
+  authors: [{ name: "HapMap" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "HapMap",
+    title: "HapMap - Campus Events Discovery",
+    description: "Discover campus events on an interactive map. Find parties, club meetings, sports events, and more at your school.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HapMap - Campus Events Discovery",
+    description: "Discover campus events on an interactive map.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

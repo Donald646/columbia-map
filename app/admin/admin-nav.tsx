@@ -47,7 +47,7 @@ export default function AdminNav({ user, organizations }: AdminNavProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <Link href="/admin" className="font-semibold hover:underline">
-                HapMap
+                EventsCU
               </Link>
               {displayOrganization && (
                 <>

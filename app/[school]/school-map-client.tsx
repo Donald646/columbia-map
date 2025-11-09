@@ -195,7 +195,7 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
         <div className="px-6 py-4">
           <div className="flex items-center justify-between relative">
             <Link href={`/${schoolSlug}`} className="flex items-center gap-2.5 hover:opacity-70 transition-opacity">
-              <span className="font-bold text-xl tracking-tight">HapMap</span>
+              <span className="font-bold text-xl tracking-tight">EventsCU</span>
               {schoolHorizontalLogo ? (
                 <>
                   <span className="text-muted-foreground/40">|</span>
