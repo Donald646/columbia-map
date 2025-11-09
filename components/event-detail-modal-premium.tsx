@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 import { MapPin, Clock, Users, ExternalLink, Share2, Calendar, Navigation } from 'lucide-react'
 import {
   Dialog,
@@ -55,10 +56,11 @@ export function EventDetailModalPremium({ isOpen, onClose, event }: EventDetailM
         <div className="relative h-48 overflow-hidden">
           {event.imageUrl ? (
             <>
-              <img
+              <Image
                 src={event.imageUrl}
                 alt={event.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
             </>

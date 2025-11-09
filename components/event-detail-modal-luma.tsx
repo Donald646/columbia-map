@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 import { MapPin, Clock, Calendar, Share2, X, Users, ExternalLink } from 'lucide-react'
 import {
   Dialog,
@@ -53,10 +54,11 @@ export function EventDetailModalLuma({ isOpen, onClose, event }: EventDetailModa
         {/* Image with overlay badges */}
         {event.imageUrl && (
           <div className="relative w-full h-72 bg-muted overflow-hidden">
-            <img
+            <Image
               src={event.imageUrl}
               alt={event.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
 
             {/* Badges overlay */}

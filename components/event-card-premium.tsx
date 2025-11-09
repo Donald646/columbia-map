@@ -83,9 +83,11 @@ export function EventCardPremium({
           <div className="relative flex-shrink-0">
             {imageUrl ? (
               <div className="w-20 h-20 rounded-lg overflow-hidden ring-1 ring-black/5">
-                <img
+                <Image
                   src={imageUrl}
                   alt={title}
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
