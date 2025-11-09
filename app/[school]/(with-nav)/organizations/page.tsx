@@ -21,7 +21,7 @@ export async function generateMetadata({
     }
   }
 
-  const title = `Organizations at ${school.name} | HapMap`
+  const title = `Organizations at ${school.name} | EventsCU`
   const description = `Discover and explore student organizations at ${school.name}. Find clubs, societies, and student groups.`
 
   return {
@@ -31,7 +31,7 @@ export async function generateMetadata({
       title: `Organizations at ${school.name}`,
       description,
       type: 'website',
-      siteName: 'HapMap',
+      siteName: 'EventsCU',
     },
     twitter: {
       card: 'summary',

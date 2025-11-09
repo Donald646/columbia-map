@@ -26,7 +26,7 @@ export async function generateMetadata({
     }
   }
 
-  const title = `${orgData.name} | ${school.name} | HapMap`
+  const title = `${orgData.name} | ${school.name} | EventsCU`
   const description = orgData.description || `View events and information for ${orgData.name} at ${school.name}.`
 
   return {
@@ -36,7 +36,7 @@ export async function generateMetadata({
       title: orgData.name,
       description,
       type: 'website',
-      siteName: 'HapMap',
+      siteName: 'EventsCU',
       ...(orgData.logo_url && {
         images: [
           {

@@ -34,13 +34,13 @@ export async function generateMetadata({
   const description = schoolData?.description || `Discover events happening at ${schoolName}. Find parties, club meetings, sports events, and more.`
 
   return {
-    title: `${schoolName} Events | HapMap`,
+    title: `${schoolName} Events | EventsCU`,
     description,
     openGraph: {
       title: `${schoolName} Events`,
       description,
       type: 'website',
-      siteName: 'HapMap',
+      siteName: 'EventsCU',
     },
     twitter: {
       card: 'summary_large_image',

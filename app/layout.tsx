@@ -16,22 +16,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "HapMap - Campus Events Discovery",
-    template: "%s | HapMap",
+    default: "EventsCU - Campus Events Discovery",
+    template: "%s | EventsCU",
   },
   description: "Discover campus events on an interactive map. Find parties, club meetings, sports events, and more at your school.",
   keywords: ["college events", "university events", "campus map", "student events", "event discovery"],
-  authors: [{ name: "HapMap" }],
+  authors: [{ name: "EventsCU" }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "HapMap",
-    title: "HapMap - Campus Events Discovery",
+    siteName: "EventsCU",
+    title: "EventsCU - Campus Events Discovery",
     description: "Discover campus events on an interactive map. Find parties, club meetings, sports events, and more at your school.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "HapMap - Campus Events Discovery",
+    title: "EventsCU - Campus Events Discovery",
     description: "Discover campus events on an interactive map.",
   },
   robots: {

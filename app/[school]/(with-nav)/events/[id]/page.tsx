@@ -40,7 +40,7 @@ export async function generateMetadata({
     ? event.organizations[0]?.name
     : (event.organizations as { name: string } | null)?.name
 
-  const title = `${event.title} | HapMap`
+  const title = `${event.title} | EventsCU`
   const description = event.description || `Join us for ${event.title}${organizationName ? ` hosted by ${organizationName}` : ''}.`
   const eventDate = event.starts_at ? new Date(event.starts_at).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -56,7 +56,7 @@ export async function generateMetadata({
       title: event.title,
       description,
       type: 'website',
-      siteName: 'HapMap',
+      siteName: 'EventsCU',
       ...(event.image_url && {
         images: [
           {
