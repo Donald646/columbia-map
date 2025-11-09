@@ -1,17 +1,17 @@
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, MapPin, Calendar, Share2, ExternalLink } from 'lucide-react'
+import { MapPin, Calendar, Share2, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import Link from 'next/link'
 import Image from 'next/image'
 import { getGoogleMapsUrl } from '@/lib/utils/transform'
 
 export default async function EventPage({
   params,
 }: {
-  params: { school: string; id: string }
+  params: Promise<{ school: string; id: string }>
 }) {
+  const { school: schoolSlug, id } = await params
   const supabase = await createClient()
 
   const { data: event, error } = await supabase
@@ -25,7 +25,7 @@ export default async function EventPage({
         website_url
       )
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !event) {
@@ -34,19 +34,6 @@ export default async function EventPage({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-background border-b px-4 py-3 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex items-center gap-3">
-          <Link href={`/${params.school}`}>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
-          </Link>
-          <h1 className="text-lg font-bold">{params.school.toUpperCase()} Events</h1>
-        </div>
-      </header>
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Mobile Layout - Single Column Centered */}
@@ -234,7 +221,7 @@ export default async function EventPage({
             {/* Featured Badge */}
             <div>
               <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-100 text-xs">
-                Featured in {params.school.charAt(0).toUpperCase() + params.school.slice(1)}
+                Featured in {schoolSlug.charAt(0).toUpperCase() + schoolSlug.slice(1)}
               </Badge>
             </div>
 

@@ -46,9 +46,9 @@ export async function GET(request: Request) {
           .eq('token', token)
           .single()
 
-        hasValidInvitationToken = tokenInvitation &&
+        hasValidInvitationToken = !!(tokenInvitation &&
           tokenInvitation.status === 'pending' &&
-          (!tokenInvitation.expires_at || new Date(tokenInvitation.expires_at) > new Date())
+          (!tokenInvitation.expires_at || new Date(tokenInvitation.expires_at) > new Date()))
       }
     }
 

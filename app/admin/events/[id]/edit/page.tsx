@@ -23,16 +23,20 @@ export default async function EditEventPage({ params }: { params: { id: string }
   }
 
   // Check if user has access to this event's organization
-  const hasAccess = organizations.some(org => org.id === event.organization_id)
-  if (!hasAccess) {
+  const organization = organizations.find(org => org.id === event.organization_id)
+  if (!organization) {
     redirect('/admin/events')
   }
 
-  // Convert coordinates to strings for form
-  const eventWithCoords = {
-    ...event,
-    latitude: event.latitude?.toString() || '',
-    longitude: event.longitude?.toString() || '',
+  // Get school info
+  const { data: school } = await supabase
+    .from('schools')
+    .select('id, slug')
+    .eq('id', organization.school_id)
+    .single()
+
+  if (!school) {
+    redirect('/admin/events')
   }
 
   return (
@@ -49,7 +53,14 @@ export default async function EditEventPage({ params }: { params: { id: string }
         <p className="text-muted-foreground">{event.title}</p>
       </div>
 
-      <EventForm organizations={organizations} event={eventWithCoords} />
+      <EventForm
+        organizationId={organization.id}
+        organizationName={organization.name}
+        schoolId={school.id}
+        schoolSlug={school.slug}
+        event={event}
+        redirectUrl="/admin/events"
+      />
     </div>
   )
 }

@@ -1,3 +1,27 @@
+import { DbEventWithOrg } from '@/types/database-helpers'
+
+// Re-export for convenience
+export type DbEvent = DbEventWithOrg
+
+interface TransformedEvent {
+  id: string
+  title: string
+  startTime: string
+  endTime?: string
+  venue: string
+  address?: string
+  category: string
+  isFree: boolean
+  organizer?: string
+  organizationSlug?: string
+  isOrgVerified: boolean
+  imageUrl?: string
+  description?: string
+  url?: string
+  longitude: number
+  latitude: number
+}
+
 /**
  * Format timestamp to time
  * "2025-10-21T14:00:00Z" → "2:00 PM"
@@ -25,22 +49,22 @@ export function formatDate(timestamp: string) {
 /**
  * Transform database event to UI format
  */
-export function transformEvent(row: any) {
+export function transformEvent(row: DbEvent): TransformedEvent {
   return {
     id: row.id,
     title: row.title,
     startTime: formatTime(row.starts_at),
     endTime: row.ends_at ? formatTime(row.ends_at) : undefined,
-    venue: row.venue_name,
+    venue: row.venue_name || 'TBA',
     category: row.category || 'other',
     isFree: row.is_free ?? true,
     organizer: row.organizations?.name,
     organizationSlug: row.organizations?.slug,
-    imageUrl: row.image_url,
-    attendeeCount: row.attendee_count || 0,
-    description: row.description,
-    address: row.venue_address,
-    url: row.external_url,
+    isOrgVerified: row.organizations?.verified || false,
+    imageUrl: row.image_url || undefined,
+    description: row.description || undefined,
+    address: row.venue_address || undefined,
+    url: row.external_url || undefined,
     longitude: row.longitude || 0,
     latitude: row.latitude || 0,
   }
@@ -49,14 +73,14 @@ export function transformEvent(row: any) {
 /**
  * Transform event to map marker
  */
-export function eventToMarker(event: any) {
+export function eventToMarker(event: DbEvent) {
   return {
     id: event.id,
-    longitude: event.longitude,
-    latitude: event.latitude,
+    longitude: event.longitude || 0,
+    latitude: event.latitude || 0,
     title: event.title,
-    category: event.category,
-    type: event.organizer ? 'club' : 'school'
+    category: event.category || 'other',
+    type: event.organizations ? ('club' as const) : ('school' as const)
   }
 }
 

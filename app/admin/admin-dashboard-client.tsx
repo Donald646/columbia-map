@@ -13,12 +13,13 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { DbOrganization, DbOrganizationAdminWithUser, DbInvitation, DbEventWithOrg } from '@/types/database-helpers'
 
 interface AdminDashboardClientProps {
-  org: any
-  admins: any[]
-  invitations: any[]
-  events: any[]
+  org: DbOrganization
+  admins: DbOrganizationAdminWithUser[]
+  invitations: DbInvitation[]
+  events: DbEventWithOrg[]
   currentUserId: string
   currentUserRole: string
 }
@@ -67,7 +68,7 @@ export default function AdminDashboardClient({
       const fileName = `${org.id}/${type}-${Date.now()}.${fileExt}`
 
       // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('organization-logos')
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -92,9 +93,9 @@ export default function AdminDashboardClient({
 
       toast.success(`${type === 'banner' ? 'Banner' : 'Logo'} updated successfully`)
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Error uploading ${type}:`, error)
-      toast.error(`Failed to upload ${type}: ${error.message}`)
+      toast.error(`Failed to upload ${type}: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       if (type === 'banner') setUploadingBanner(false)
       else setUploadingLogo(false)
@@ -148,9 +149,9 @@ export default function AdminDashboardClient({
 
       toast.success('Settings updated successfully')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating organization:', error)
-      toast.error(`Failed to update: ${error.message}`)
+      toast.error(`Failed to update: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSaving(false)
     }
@@ -351,7 +352,7 @@ export default function AdminDashboardClient({
                               </div>
                             )}
 
-                            {event.rsvp_count > 0 && (
+                            {(event.rsvp_count || 0) > 0 && (
                               <div className="text-xs bg-muted px-2 py-0.5 rounded">
                                 {event.rsvp_count} RSVPs
                               </div>

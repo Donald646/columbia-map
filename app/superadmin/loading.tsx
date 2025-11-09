@@ -1,5 +1,3 @@
-import { Loader2 } from 'lucide-react'
-
 export default function Loading() {
   return (
     <div className="max-w-6xl mx-auto">

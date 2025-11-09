@@ -1,6 +1,7 @@
-import { createClient } from '@/utils/supabase/server'
+import { getOrganizationBySlug } from '@/lib/data/organizations'
+import { getSchool } from '@/lib/data/events'
 import { notFound } from 'next/navigation'
-import { Calendar, MapPin, ExternalLink, CheckCircle, Globe, Twitter, Linkedin, Instagram } from 'lucide-react'
+import { Calendar, MapPin, BadgeCheck, Globe, Instagram } from 'lucide-react'
 import { formatDate, formatTime } from '@/lib/utils/transform'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -9,48 +10,21 @@ import { Button } from '@/components/ui/button'
 export default async function OrganizationPage({
   params
 }: {
-  params: { school: string; slug: string }
+  params: Promise<{ school: string; slug: string }>
 }) {
-  const supabase = await createClient()
+  const { school: schoolSlug, slug } = await params
 
-  // Get organization
-  const { data: org } = await supabase
-    .from('organizations')
-    .select(`
-      *,
-      schools!organizations_school_id_fkey (
-        id,
-        name,
-        slug
-      )
-    `)
-    .eq('slug', params.slug)
-    .eq('status', 'active')
-    .single()
+  // Get organization with events and school data in parallel
+  const [orgData, school] = await Promise.all([
+    getOrganizationBySlug(slug),
+    getSchool(schoolSlug)
+  ])
 
-  if (!org || org.schools?.slug !== params.school) {
+  if (!orgData || !school || orgData.school_id !== school.id) {
     notFound()
   }
 
-  // Get upcoming events
-  const { data: upcomingEvents } = await supabase
-    .from('events')
-    .select('*')
-    .eq('organization_id', org.id)
-    .eq('status', 'published')
-    .gte('starts_at', new Date().toISOString())
-    .order('starts_at', { ascending: true })
-    .limit(10)
-
-  // Get past events
-  const { data: pastEvents } = await supabase
-    .from('events')
-    .select('*')
-    .eq('organization_id', org.id)
-    .eq('status', 'published')
-    .lt('starts_at', new Date().toISOString())
-    .order('starts_at', { ascending: false })
-    .limit(5)
+  const { upcomingEvents, pastEvents, ...org } = orgData
 
   return (
     <div className="min-h-screen bg-background">
@@ -105,12 +79,12 @@ export default async function OrganizationPage({
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-2xl font-bold">{org.name}</h1>
                 {org.verified && (
-                  <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <BadgeCheck className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 )}
               </div>
 
               <p className="text-muted-foreground text-sm mb-2">
-                {org.schools?.name}
+                {school.name}
               </p>
 
               {org.description && (
@@ -121,28 +95,6 @@ export default async function OrganizationPage({
 
               {/* Social Links - Icon Row */}
               <div className="flex gap-2 items-center">
-                {org.twitter_url && (
-                  <a
-                    href={org.twitter_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
-                    aria-label="Twitter"
-                  >
-                    <Twitter className="w-4 h-4" />
-                  </a>
-                )}
-                {org.linkedin_url && (
-                  <a
-                    href={org.linkedin_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
-                    aria-label="LinkedIn"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </a>
-                )}
                 {org.instagram_url && (
                   <a
                     href={org.instagram_url}
@@ -191,7 +143,7 @@ export default async function OrganizationPage({
               {upcomingEvents.map((event) => (
                 <Link
                   key={event.id}
-                  href={`/${params.school}/events/${event.id}`}
+                  href={`/${schoolSlug}/events/${event.id}`}
                   className="block"
                 >
                   <div className="border rounded-lg hover:shadow-md hover:border-primary/50 transition-all bg-card p-3">

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Clock } from 'lucide-react'
+import { Clock, BadgeCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -9,6 +9,7 @@ import Link from 'next/link'
 interface EventCardProps {
   id: string
   title: string
+  description?: string
   startTime: string
   endTime?: string
   venue: string
@@ -21,21 +22,21 @@ interface EventCardProps {
   imageUrl?: string
   attendeeCount?: number
   isHighlighted?: boolean
+  isOrgVerified?: boolean
   onClick?: () => void
   className?: string
 }
 
 export function EventCardLuma({
   title,
+  description,
   startTime,
-  endTime,
   venue,
-  distance,
   organizer,
   organizationSlug,
   schoolSlug,
   imageUrl,
-  attendeeCount,
+  isOrgVerified,
   onClick,
   className,
 }: EventCardProps) {
@@ -79,15 +80,30 @@ export function EventCardLuma({
                 <Link
                   href={`/${schoolSlug}/organizations/${organizationSlug}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="truncate hover:text-foreground hover:underline transition-colors"
+                  className="truncate hover:text-foreground hover:underline transition-colors flex items-center gap-1"
                   prefetch={true}
                 >
-                  By {organizer}
+                  <span>By {organizer}</span>
+                  {isOrgVerified && (
+                    <BadgeCheck className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                  )}
                 </Link>
               ) : (
-                <span className="truncate">By {organizer}</span>
+                <span className="truncate flex items-center gap-1">
+                  <span>By {organizer}</span>
+                  {isOrgVerified && (
+                    <BadgeCheck className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                  )}
+                </span>
               )}
             </div>
+          )}
+
+          {/* Description - Truncated */}
+          {description && (
+            <p className="text-xs text-muted-foreground line-clamp-1">
+              {description}
+            </p>
           )}
 
           {/* Time and Location together */}

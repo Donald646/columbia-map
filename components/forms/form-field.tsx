@@ -8,7 +8,7 @@ interface FormFieldProps {
   name: string
   type?: 'text' | 'email' | 'number' | 'url' | 'datetime-local' | 'textarea' | 'select' | 'checkbox'
   value: string | number | boolean
-  onChange: (value: any) => void
+  onChange: (value: string | boolean) => void
   required?: boolean
   placeholder?: string
   options?: { value: string; label: string }[]

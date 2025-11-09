@@ -146,7 +146,7 @@ export default async function AcceptInvitationPage({ searchParams }: PageProps) 
     // Success! Redirect to admin dashboard
     redirect('/admin')
 
-  } catch (error) {
+  } catch {
     // If auto-accept fails, show manual acceptance UI
     return (
       <div className="min-h-screen bg-background py-12 px-4">
@@ -175,7 +175,7 @@ export default async function AcceptInvitationPage({ searchParams }: PageProps) 
                   <div className="text-sm">
                     <p className="font-medium text-orange-900 mb-1">Email Mismatch</p>
                     <p className="text-orange-800">
-                      This invitation was sent to {invitation.email} but you're signed in as {user.email}.
+                      This invitation was sent to {invitation.email} but you&apos;re signed in as {user.email}.
                       You can still accept if this is intentional.
                     </p>
                   </div>
@@ -184,7 +184,7 @@ export default async function AcceptInvitationPage({ searchParams }: PageProps) 
             )}
 
             <div className="bg-muted rounded-lg p-4 mb-6">
-              <h3 className="font-medium mb-2">You'll have access to:</h3>
+              <h3 className="font-medium mb-2">You&apos;ll have access to:</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {invitation.role === 'owner' ? (
                   <>
@@ -215,7 +215,7 @@ export default async function AcceptInvitationPage({ searchParams }: PageProps) 
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-red-800">
                 There was an issue automatically accepting your invitation.
-                This might be because you're already a member or there was a temporary error.
+                This might be because you&apos;re already a member or there was a temporary error.
               </p>
             </div>
 

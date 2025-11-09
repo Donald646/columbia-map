@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/utils/supabase/adminClient'
-import { Users, Mail, Calendar } from 'lucide-react'
 
 // Revalidate every 30 seconds for fresh user data
 export const revalidate = 30
@@ -55,7 +54,7 @@ export default async function UsersPage() {
                       </div>
                     </td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">
-                      {user.schools?.name || '—'}
+                      {user.schools ? (Array.isArray(user.schools) ? user.schools[0]?.name : (user.schools as { name: string }).name) : '—'}
                     </td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">
                       {new Date(user.created_at).toLocaleDateString()}

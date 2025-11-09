@@ -69,7 +69,7 @@ export function ImageUpload({
       const filePath = `${folder}/${fileName}`
 
       // Upload file
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -85,9 +85,9 @@ export function ImageUpload({
 
       onChange(publicUrl)
       toast.success('Image uploaded successfully!')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload error:', error)
-      toast.error(`Failed to upload image: ${error.message}`)
+      toast.error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setPreview(value || null)
     } finally {
       setUploading(false)
@@ -113,7 +113,7 @@ export function ImageUpload({
         fileInputRef.current.value = ''
       }
       toast.success('Image removed')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Remove error:', error)
       toast.error('Failed to remove image')
     }

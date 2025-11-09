@@ -7,14 +7,15 @@ import { Input } from '@/components/ui/input'
 import { createClient } from '@/utils/supabase/client'
 import { UserPlus, Trash2, Crown, Shield, Mail } from 'lucide-react'
 import { toast } from 'sonner'
+import { DbOrganizationAdminSimple } from '@/types/database-helpers'
 
 interface SuperAdminTeamManagerProps {
   organizationId: string
-  admins: any[]
-  allUsers: any[]
+  admins: DbOrganizationAdminSimple[]
+  allUsers: { id: string; email: string }[]
 }
 
-export default function SuperAdminTeamManager({ organizationId, admins, allUsers }: SuperAdminTeamManagerProps) {
+export default function SuperAdminTeamManager({ organizationId, admins }: SuperAdminTeamManagerProps) {
   const router = useRouter()
   const [showAddForm, setShowAddForm] = useState(false)
   const [email, setEmail] = useState('')
@@ -78,9 +79,9 @@ export default function SuperAdminTeamManager({ organizationId, admins, allUsers
       setShowAddForm(false)
       setEmail('')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding admin:', error)
-      toast.error(`Failed to add admin: ${error.message}`)
+      toast.error(`Failed to add admin: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -99,9 +100,9 @@ export default function SuperAdminTeamManager({ organizationId, admins, allUsers
       if (error) throw error
 
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error removing admin:', error)
-      alert(`Failed to remove admin: ${error.message}`)
+      alert(`Failed to remove admin: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -124,7 +125,7 @@ export default function SuperAdminTeamManager({ organizationId, admins, allUsers
         <form onSubmit={handleAddAdmin} className="mb-6 p-4 bg-muted rounded-lg">
           <h3 className="font-semibold mb-4">Invite Team Member</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Enter any email address. If they don't have an account, they can sign in with Google using that email.
+            Enter any email address. If they don&apos;t have an account, they can sign in with Google using that email.
           </p>
           <div className="space-y-4">
             <div>
@@ -179,7 +180,8 @@ export default function SuperAdminTeamManager({ organizationId, admins, allUsers
       {/* Current Members */}
       <div className="space-y-2">
         {admins.map((admin) => {
-          const displayEmail = admin.email || admin.users?.email
+          const users = Array.isArray(admin.users) ? admin.users[0] : admin.users
+          const displayEmail = admin.email || users?.email
           const isPending = !admin.user_id
 
           return (
@@ -222,7 +224,7 @@ export default function SuperAdminTeamManager({ organizationId, admins, allUsers
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleRemoveAdmin(admin.id, displayEmail)}
+                onClick={() => handleRemoveAdmin(admin.id, displayEmail || 'user')}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <Trash2 className="w-4 h-4" />

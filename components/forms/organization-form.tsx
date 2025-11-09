@@ -16,10 +16,11 @@ import { createClient } from '@/utils/supabase/client'
 import { Camera, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
+import { DbOrganization } from '@/types/database-helpers'
 
 interface OrganizationFormProps {
-  schools: any[]
-  organization?: any
+  schools: { id: string; name: string }[]
+  organization?: DbOrganization
   redirectUrl?: string
   showVerifiedToggle?: boolean // Super admin only
   showSchoolSelector?: boolean // Super admin can change school, org admin cannot
@@ -99,9 +100,9 @@ export function OrganizationForm({
       }))
 
       toast.success('Image uploaded successfully')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error uploading image:', error)
-      toast.error(`Failed to upload image: ${error.message}`)
+      toast.error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setUploading(false)
     }
@@ -129,7 +130,7 @@ export function OrganizationForm({
 
       if (organization?.id) {
         // Update
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('organizations')
           .update(orgData)
           .eq('id', organization.id)
@@ -142,7 +143,7 @@ export function OrganizationForm({
         toast.success('Organization updated successfully!')
       } else {
         // Create
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('organizations')
           .insert(orgData)
           .select()
@@ -156,9 +157,9 @@ export function OrganizationForm({
 
       router.push(redirectUrl || '/admin/settings')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving organization:', error)
-      const errorMessage = error?.message || error?.toString() || 'An unknown error occurred'
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
       toast.error(`Failed to save organization: ${errorMessage}`)
       setLoading(false)
     }

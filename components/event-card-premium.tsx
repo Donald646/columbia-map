@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { MapPin, Clock, Users, Star, DollarSign } from 'lucide-react'
+import Image from 'next/image'
+import { MapPin, Clock, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 

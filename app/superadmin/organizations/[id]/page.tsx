@@ -29,7 +29,9 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
       email,
       role,
       created_at,
-      users (id, email)
+      invitation_id,
+      invited_by,
+      users!organization_admins_user_id_fkey (id, email)
     `)
     .eq('organization_id', id)
 
@@ -52,8 +54,7 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
       venue_address,
       status,
       category,
-      is_free,
-      rsvp_count
+      is_free
     `)
     .eq('organization_id', id)
     .order('starts_at', { ascending: false })

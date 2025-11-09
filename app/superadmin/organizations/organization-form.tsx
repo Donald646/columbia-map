@@ -1,8 +1,9 @@
 import { OrganizationForm } from '@/components/forms/organization-form'
+import { DbOrganization } from '@/types/database-helpers'
 
 interface OrganizationFormProps {
-  schools: any[]
-  organization?: any
+  schools: { id: string; name: string }[]
+  organization?: DbOrganization
   redirectUrl?: string
 }
 

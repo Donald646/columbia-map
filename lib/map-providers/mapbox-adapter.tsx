@@ -2,7 +2,7 @@
 
 import React, { useCallback, useRef, useState, useEffect } from 'react'
 import Map, { Marker, NavigationControl, MapRef } from 'react-map-gl/mapbox'
-import { IMapProvider, MapBounds, MapViewState } from '../map-types'
+import { IMapProvider, MapViewState } from '../map-types'
 import { Button } from '@/components/ui/button'
 import { RotateCcw } from 'lucide-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -13,7 +13,6 @@ export function MapboxAdapter({
   initialZoom,
   onMarkerClick,
   onBoundsChange,
-  userLocation,
   onFlyTo,
   initialBearing = 0,
 }: IMapProvider) {
@@ -31,7 +30,7 @@ export function MapboxAdapter({
         })
       }
       
-      ;(window as any).__mapFlyTo = flyToLocation
+      window.__mapFlyTo = flyToLocation
     }
   }, [onFlyTo])
 
@@ -45,7 +44,7 @@ export function MapboxAdapter({
 
   // Expose viewState to window for mobile recenter button
   useEffect(() => {
-    ;(window as any).__mapViewState = viewState
+    window.__mapViewState = viewState
   }, [viewState])
 
   const [showRecenter, setShowRecenter] = useState(false)

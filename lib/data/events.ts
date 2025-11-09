@@ -20,16 +20,16 @@ export async function getEvents(schoolSlug: string, filters?: {
 
   if (!school) return []
 
-  // Build query
+  // Build query - show events that haven't ended yet (includes ongoing events)
   let query = supabase
     .from('events')
     .select(`
       *,
-      organizations (name, slug, logo_url)
+      organizations (name, slug, logo_url, verified)
     `)
     .eq('school_id', school.id)
     .eq('status', 'published')
-    .gte('starts_at', new Date().toISOString())
+    .gte('ends_at', new Date().toISOString())
     .order('starts_at', { ascending: true })
     .limit(50)
 
@@ -60,8 +60,8 @@ export async function getEvents(schoolSlug: string, filters?: {
 
   const { data: rows } = await query
 
-  // Transform to UI format
-  return (rows || []).map(transformEvent)
+  // Return raw database events
+  return rows || []
 }
 
 /**
@@ -74,8 +74,7 @@ export async function getEventById(eventId: string) {
     .from('events')
     .select(`
       *,
-      organizations (name, slug, logo_url, verified),
-      venues (name, address)
+      organizations (name, slug, logo_url, verified)
     `)
     .eq('id', eventId)
     .single()

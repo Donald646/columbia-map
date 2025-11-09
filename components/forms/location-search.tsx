@@ -35,7 +35,7 @@ export function LocationSearch({ value, onChange, required, schoolId }: Location
   const [suggestions, setSuggestions] = useState<LocationResult[]>([])
   const [loading, setLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const debounceRef = useRef<NodeJS.Timeout>()
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -83,7 +83,13 @@ export function LocationSearch({ value, onChange, required, schoolId }: Location
       const data = await response.json()
 
       // Convert suggestions to our format
-      const results = (data.suggestions || []).map((item: any) => ({
+      interface MapboxSuggestion {
+        mapbox_id: string
+        name: string
+        full_address?: string
+        place_formatted?: string
+      }
+      const results = (data.suggestions || []).map((item: MapboxSuggestion) => ({
         id: item.mapbox_id,
         place_name: item.full_address || item.place_formatted || item.name,
         center: [0, 0], // Will get real coords on retrieve

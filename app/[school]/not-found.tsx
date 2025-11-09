@@ -7,7 +7,7 @@ export default function SchoolNotFound() {
       <div className="text-center max-w-md px-4">
         <h1 className="text-4xl font-bold mb-4">School Not Found</h1>
         <p className="text-muted-foreground mb-6">
-          We don't have events for this school yet.
+          We don&apos;t have events for this school yet.
         </p>
         <Link href="/">
           <Button size="lg">

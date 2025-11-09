@@ -1,7 +1,8 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { createAdminClient } from '@/utils/supabase/adminClient'
-import { Plus, Building2, Users, Calendar } from 'lucide-react'
+import { Plus, Building2, Users } from 'lucide-react'
 
 // Revalidate every 30 seconds for fresh organization data
 export const revalidate = 30
@@ -33,6 +34,7 @@ export default async function OrganizationsPage() {
       description,
       verified,
       slug,
+      logo_url,
       schools!organizations_school_id_fkey (name, slug),
       organization_admins (count)
     `)
@@ -77,13 +79,29 @@ export default async function OrganizationsPage() {
             >
               <div className="bg-card border rounded-lg p-6 hover:border-primary transition-colors h-full">
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-6 h-6 text-primary" />
-                  </div>
+                  {org.logo_url ? (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden border bg-muted flex-shrink-0">
+                      <Image
+                        src={org.logo_url}
+                        alt={org.name}
+                        width={48}
+                        height={48}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-lg font-bold text-primary">
+                        {org.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg mb-1 truncate">{org.name}</h3>
                     {org.schools && (
-                      <p className="text-sm text-muted-foreground">{org.schools.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {Array.isArray(org.schools) ? org.schools[0]?.name : (org.schools as { name: string }).name}
+                      </p>
                     )}
                   </div>
                 </div>

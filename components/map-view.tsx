@@ -2,13 +2,13 @@
 
 import React from 'react'
 import { MapboxAdapter } from '@/lib/map-providers/mapbox-adapter'
-import { MapMarker } from '@/lib/map-types'
+import { MapMarker, MapBounds } from '@/lib/map-types'
 import { useSchool } from '@/lib/school-context'
 
 interface MapViewProps {
   markers?: MapMarker[]
   onMarkerClick?: (markerId: string) => void
-  onBoundsChange?: (bounds: any) => void
+  onBoundsChange?: (bounds: MapBounds) => void
   userLocation?: { longitude: number; latitude: number } | null
   onFlyTo?: (longitude: number, latitude: number) => void
 }

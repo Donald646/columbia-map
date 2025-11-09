@@ -70,14 +70,14 @@ export default async function EventsPage() {
                     {event.organizations && (
                       <div className="flex items-center gap-1.5">
                         <Building2 className="w-4 h-4" />
-                        <span>{event.organizations.name}</span>
+                        <span>{Array.isArray(event.organizations) ? event.organizations[0]?.name : (event.organizations as { name: string }).name}</span>
                       </div>
                     )}
 
                     {event.schools && (
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs bg-muted px-2 py-0.5 rounded">
-                          {event.schools.name}
+                          {Array.isArray(event.schools) ? event.schools[0]?.name : (event.schools as { name: string }).name}
                         </span>
                       </div>
                     )}

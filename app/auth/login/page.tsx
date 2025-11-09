@@ -2,11 +2,11 @@
 
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { AlertCircle } from 'lucide-react'
+import { Suspense } from 'react'
 
-export default function LoginPage() {
-  const router = useRouter()
+function LoginForm() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
   const email = searchParams.get('email')
@@ -105,5 +105,24 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full mx-4">
+          <div className="bg-card border rounded-lg p-8 shadow-sm">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold mb-2">Sign In</h1>
+              <p className="text-sm text-muted-foreground">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

@@ -7,14 +7,15 @@ export default async function OrganizationDetailLayout({
   params,
 }: {
   children: React.ReactNode
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const supabase = createAdminClient()
 
   const { data: org } = await supabase
     .from('organizations')
     .select('id, name')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!org) {

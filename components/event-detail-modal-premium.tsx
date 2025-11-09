@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { MapPin, Clock, Tag, Users, ExternalLink, Plus, Share2, Calendar, Navigation } from 'lucide-react'
+import { MapPin, Clock, Users, ExternalLink, Share2, Calendar, Navigation } from 'lucide-react'
 import {
   Dialog,
   DialogContent,

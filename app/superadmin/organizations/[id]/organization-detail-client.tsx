@@ -14,12 +14,24 @@ import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { DbOrganization, DbOrganizationAdminSimple } from '@/types/database-helpers'
 
 interface OrganizationDetailClientProps {
-  org: any
-  admins: any[]
-  allUsers: any[]
-  events: any[]
+  org: DbOrganization & { schools?: { name: string } | null }
+  admins: DbOrganizationAdminSimple[]
+  allUsers: { id: string; email: string }[]
+  events: {
+    id: string
+    title: string
+    description: string | null
+    starts_at: string | null
+    ends_at: string | null
+    venue_name: string | null
+    venue_address: string | null
+    status: string | null
+    category: string | null
+    is_free: boolean | null
+  }[]
 }
 
 type NavSection = 'events' | 'team' | 'settings'
@@ -65,7 +77,7 @@ export default function OrganizationDetailClient({
       const fileName = `${org.id}/${type}-${Date.now()}.${fileExt}`
 
       // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('organization-logos')
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -90,9 +102,9 @@ export default function OrganizationDetailClient({
 
       toast.success(`${type === 'banner' ? 'Banner' : 'Logo'} updated successfully`)
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Error uploading ${type}:`, error)
-      toast.error(`Failed to upload ${type}: ${error.message}`)
+      toast.error(`Failed to upload ${type}: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       if (type === 'banner') setUploadingBanner(false)
       else setUploadingLogo(false)
@@ -151,9 +163,9 @@ export default function OrganizationDetailClient({
 
       toast.success('Settings updated successfully')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating organization:', error)
-      toast.error(`Failed to update: ${error.message}`)
+      toast.error(`Failed to update: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSaving(false)
     }
@@ -345,7 +357,7 @@ export default function OrganizationDetailClient({
                             <div className="flex items-center gap-1.5">
                               <Calendar className="w-4 h-4" />
                               <span>
-                                {formatDate(event.starts_at)} at {formatTime(event.starts_at)}
+                                {event.starts_at ? `${formatDate(event.starts_at)} at ${formatTime(event.starts_at)}` : 'TBA'}
                               </span>
                             </div>
 
@@ -353,12 +365,6 @@ export default function OrganizationDetailClient({
                               <div className="flex items-center gap-1.5">
                                 <MapPin className="w-4 h-4" />
                                 <span className="truncate">{event.venue_name}</span>
-                              </div>
-                            )}
-
-                            {event.rsvp_count > 0 && (
-                              <div className="text-xs bg-muted px-2 py-0.5 rounded">
-                                {event.rsvp_count} RSVPs
                               </div>
                             )}
                           </div>

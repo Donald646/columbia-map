@@ -1,19 +1,21 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { EventList } from '@/components/event-list'
 import { EventDetailSheet } from '@/components/event-detail-sheet'
 import { FilterModal } from '@/components/filter-modal'
 import { Button } from '@/components/ui/button'
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SlidersHorizontal, List, Locate, Search, X, LogIn } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
+import { DbEvent } from '@/lib/utils/transform'
+import { Marker } from '@/types/event'
 
 // Dynamic import for the heavy map component
 const MapView = dynamic(
@@ -32,8 +34,8 @@ const MapView = dynamic(
 )
 
 interface SchoolMapClientProps {
-  events: any[]
-  markers: any[]
+  events: DbEvent[]
+  markers: Marker[]
   schoolSlug: string
   schoolName: string
   schoolHorizontalLogo: string | null
@@ -44,7 +46,7 @@ interface SchoolMapClientProps {
   isOrgAdmin: boolean
 }
 
-export default function SchoolMapClient({ events, markers, schoolSlug, schoolName, schoolHorizontalLogo, campusCenter, initialZoom, initialBearing, userRole, isOrgAdmin }: SchoolMapClientProps) {
+export default function SchoolMapClient({ events, markers, schoolSlug, schoolName, schoolHorizontalLogo, campusCenter, initialBearing, userRole, isOrgAdmin }: SchoolMapClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -59,14 +61,12 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
   }
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
-  const [showEventList, setShowEventList] = useState(true)
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true)
   const [drawerSnap, setDrawerSnap] = useState<number | string | null>(0.7)
   const [isMobile, setIsMobile] = useState(false)
   const [userLocation, setUserLocation] = useState<{ longitude: number; latitude: number } | null>(null)
   const [showRecenter, setShowRecenter] = useState(false)
-  const [mapViewState, setMapViewState] = useState<any>(null)
   const [searchExpanded, setSearchExpanded] = useState(false)
 
   // Get filter values from URL
@@ -134,28 +134,16 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
   }
 
   const handleMarkerClick = (markerId: string) => {
-    if (isMobile) {
-      // On mobile, navigate to event page
-      router.push(`/${schoolSlug}/events/${markerId}`)
-    } else {
-      // On desktop, open sheet
-      setSelectedEventId(markerId)
-    }
+    setSelectedEventId(markerId)
   }
 
   const handleEventClick = (eventId: string) => {
-    if (isMobile) {
-      // On mobile, navigate to event page
-      router.push(`/${schoolSlug}/events/${eventId}`)
-    } else {
-      // On desktop, open sheet
-      setSelectedEventId(eventId)
-    }
+    setSelectedEventId(eventId)
   }
 
   const handleRecenter = useCallback(() => {
-    if ((window as any).__mapFlyTo) {
-      ;(window as any).__mapFlyTo(campusCenter.longitude, campusCenter.latitude)
+    if (window.__mapFlyTo) {
+      window.__mapFlyTo(campusCenter.longitude, campusCenter.latitude)
     }
   }, [campusCenter])
 
@@ -167,7 +155,7 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
     }
 
     const checkOffCenter = () => {
-      const viewState = (window as any).__mapViewState
+      const viewState = window.__mapViewState
       if (!viewState) return
 
       const lngDiff = Math.abs(viewState.longitude - campusCenter.longitude)
@@ -203,49 +191,61 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
-      <header className="hidden lg:block bg-background px-6 py-3 border-b">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-bold">HapMap</span>
-            {schoolHorizontalLogo ? (
-              <>
-                <span className="text-muted-foreground">|</span>
-                <div className="relative h-8 w-auto max-w-[200px]">
-                  <Image
-                    src={schoolHorizontalLogo}
-                    alt={schoolName}
-                    width={200}
-                    height={32}
-                    className="object-contain h-full w-auto"
-                    priority
-                  />
-                </div>
-              </>
-            ) : (
-              <>
-                <span className="text-muted-foreground">|</span>
-                <span className="text-lg font-semibold">{schoolName}</span>
-              </>
-            )}
-          </div>
-          {isAdmin && getDashboardUrl() && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => router.push(getDashboardUrl()!)}
-              className="gap-2"
+      <header className="hidden lg:block bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between relative">
+            <Link href={`/${schoolSlug}`} className="flex items-center gap-2.5 hover:opacity-70 transition-opacity">
+              <span className="font-bold text-xl tracking-tight">HapMap</span>
+              {schoolHorizontalLogo ? (
+                <>
+                  <span className="text-muted-foreground/40">|</span>
+                  <div className="relative h-8 w-auto max-w-[200px]">
+                    <Image
+                      src={schoolHorizontalLogo}
+                      alt={schoolName}
+                      width={200}
+                      height={32}
+                      className="object-contain h-full w-auto"
+                      priority
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="text-muted-foreground/40">|</span>
+                  <span className="text-sm font-medium text-muted-foreground">{schoolName}</span>
+                </>
+              )}
+            </Link>
+
+            {/* Center - Organizations Link */}
+            <Link
+              href={`/${schoolSlug}/organizations`}
+              className="absolute left-1/2 -translate-x-1/2 text-sm font-medium hover:text-foreground transition-colors text-muted-foreground"
             >
-              <SlidersHorizontal className="w-4 h-4" />
-              Admin Dashboard
-            </Button>
-          )}
+              Organizations
+            </Link>
+
+            <div className="flex items-center gap-2">
+              {isAdmin && getDashboardUrl() && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => router.push(getDashboardUrl()!)}
+                  className="gap-2"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  Admin Dashboard
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
       <div className="flex-1 flex overflow-hidden relative">
         <div className="flex-1 flex overflow-hidden bg-background">
-        {showEventList && (
-          <div className="hidden lg:block w-sm bg-background">
+        <div className="hidden lg:block w-sm bg-background">
             <div className="h-full flex flex-col">
               <div className="p-4 space-y-3 flex-shrink-0">
                 <div className="flex items-center justify-between">
@@ -279,36 +279,43 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
               </div>
             </div>
           </div>
-        )}
 
         <div className="flex-1 relative bg-muted/30 rounded-tl-xl lg:rounded-tl-2xl overflow-hidden">
           <MapView
             markers={markers}
             onMarkerClick={handleMarkerClick}
-            onBoundsChange={(bounds) => {
-              console.log('Bounds changed:', bounds)
-            }}
+            onBoundsChange={() => {}}
             userLocation={userLocation}
-            onFlyTo={(lng, lat) => {}}
+            onFlyTo={() => {}}
           />
         </div>
         </div>
       </div>
 
       {isMobile && (
-        <button
-          onClick={() => setFilterModalOpen(true)}
-          className="fixed top-4 left-4 z-40 bg-background rounded-full px-4 py-2 shadow-lg border hover:bg-muted transition-colors flex items-center gap-2"
-          aria-label="Open filters"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          <span className="text-sm font-medium">Filters</span>
-          {(selectedCategory !== 'all' || selectedTime !== 'all' || selectedPrice !== 'all') && (
-            <span className="bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              {[selectedCategory !== 'all', selectedTime !== 'all', selectedPrice !== 'all'].filter(Boolean).length}
-            </span>
-          )}
-        </button>
+        <>
+          <button
+            onClick={() => setFilterModalOpen(true)}
+            className="fixed top-4 left-4 z-40 bg-background rounded-full px-4 py-2 shadow-lg border hover:bg-muted transition-colors flex items-center gap-2"
+            aria-label="Open filters"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="text-sm font-medium">Filters</span>
+            {(selectedCategory !== 'all' || selectedTime !== 'all' || selectedPrice !== 'all') && (
+              <span className="bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {[selectedCategory !== 'all', selectedTime !== 'all', selectedPrice !== 'all'].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+
+          {/* Organizations Link - Centered at Top */}
+          <Link
+            href={`/${schoolSlug}/organizations`}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-40 bg-background/95 backdrop-blur rounded-full px-4 py-2 shadow-lg border hover:bg-muted transition-colors text-sm font-medium"
+          >
+            Organizations
+          </Link>
+        </>
       )}
 
       {isMobile && showRecenter && (

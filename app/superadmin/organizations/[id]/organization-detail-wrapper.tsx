@@ -19,12 +19,12 @@ export default function OrganizationDetailWrapper({
   useEffect(() => {
     // Store breadcrumbs in a global variable that the nav can access
     if (typeof window !== 'undefined') {
-      ;(window as any).__superadmin_breadcrumbs = breadcrumbs
+      (window as Window & { __superadmin_breadcrumbs?: BreadcrumbItem[] | null }).__superadmin_breadcrumbs = breadcrumbs
     }
 
     return () => {
       if (typeof window !== 'undefined') {
-        ;(window as any).__superadmin_breadcrumbs = null
+        (window as Window & { __superadmin_breadcrumbs?: BreadcrumbItem[] | null }).__superadmin_breadcrumbs = null
       }
     }
   }, [breadcrumbs])

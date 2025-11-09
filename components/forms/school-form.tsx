@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { createClient } from '@/utils/supabase/client'
-import { Camera, Loader2, Upload } from 'lucide-react'
+import { Camera, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
+import { DbSchool } from '@/types/database-helpers'
 
 interface SchoolFormProps {
-  school?: any
+  school?: DbSchool
   redirectUrl?: string
 }
 
@@ -78,9 +79,9 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
       }))
 
       toast.success(`${type === 'logo' ? 'Logo' : 'Horizontal logo'} uploaded successfully`)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error uploading image:', error)
-      toast.error(`Failed to upload image: ${error.message}`)
+      toast.error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setUploading(false)
     }
@@ -127,9 +128,9 @@ export function SchoolForm({ school, redirectUrl }: SchoolFormProps) {
 
       router.push(redirectUrl || '/superadmin/schools')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving school:', error)
-      const errorMessage = error?.message || error?.toString() || 'An unknown error occurred'
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
       toast.error(`Failed to save school: ${errorMessage}`)
       setLoading(false)
     }

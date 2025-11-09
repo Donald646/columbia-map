@@ -24,14 +24,15 @@ export default async function AdminDashboard() {
     .eq('id', currentOrg.id)
     .single()
 
-  // Get all admins for this organization
+  // Get all admins for this organization (excluding current user)
   const { data: admins } = await supabase
     .from('organization_admins')
     .select(`
       *,
-      users (id, email)
+      users!organization_admins_user_id_fkey (id, email)
     `)
     .eq('organization_id', currentOrg.id)
+    .neq('user_id', user!.id)
     .order('created_at', { ascending: true })
 
   // Get pending invitations
@@ -45,19 +46,7 @@ export default async function AdminDashboard() {
   // Get events for this organization
   const { data: events } = await supabase
     .from('events')
-    .select(`
-      id,
-      title,
-      description,
-      starts_at,
-      ends_at,
-      venue_name,
-      venue_address,
-      status,
-      category,
-      is_free,
-      rsvp_count
-    `)
+    .select('*')
     .eq('organization_id', currentOrg.id)
     .order('starts_at', { ascending: false })
     .limit(50)

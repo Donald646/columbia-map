@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 import { UserPlus, Trash2, Mail, Clock, CheckCircle2, XCircle, Crown, Shield, Link2, Copy } from 'lucide-react'
+import { DbOrganizationAdminWithUser, DbInvitation } from '@/types/database-helpers'
 
 interface TeamManagementProps {
   organizationId: string
   currentUserId: string
   currentUserRole: string
-  admins: any[]
-  invitations: any[]
+  admins: DbOrganizationAdminWithUser[]
+  invitations: DbInvitation[]
 }
 
 export default function TeamManagement({
@@ -114,9 +115,9 @@ export default function TeamManagement({
         // Refresh to show new invitation in pending list
         router.refresh()
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error inviting user:', error)
-      alert(`Failed to invite user: ${error.message}`)
+      alert(`Failed to invite user: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -137,9 +138,9 @@ export default function TeamManagement({
       if (error) throw error
 
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error removing admin:', error)
-      alert(`Failed to remove admin: ${error.message}`)
+      alert(`Failed to remove admin: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -154,9 +155,9 @@ export default function TeamManagement({
       if (error) throw error
 
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error cancelling invitation:', error)
-      alert(`Failed to cancel invitation: ${error.message}`)
+      alert(`Failed to cancel invitation: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -194,7 +195,7 @@ export default function TeamManagement({
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Can be any email address (doesn't need to be .edu for admins)
+                  Can be any email address (doesn&apos;t need to be .edu for admins)
                 </p>
               </div>
 
@@ -279,17 +280,19 @@ export default function TeamManagement({
 
         {/* Current Members */}
         <div className="space-y-2">
-          {initialAdmins.map((admin) => (
+          {initialAdmins.map((admin) => {
+            const displayEmail = admin.email || admin.users?.email
+            return (
             <div
               key={admin.id}
               className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-                  {admin.users?.email?.[0].toUpperCase()}
+                  {displayEmail?.[0].toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-medium">{admin.users?.email}</p>
+                  <p className="font-medium">{displayEmail}</p>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     {admin.role === 'owner' ? (
                       <span className="flex items-center gap-1">
@@ -310,14 +313,14 @@ export default function TeamManagement({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleRemoveAdmin(admin.id, admin.users?.email)}
+                  onClick={() => handleRemoveAdmin(admin.id, displayEmail || 'user')}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
               )}
             </div>
-          ))}
+          )})}
 
           {initialAdmins.length === 0 && (
             <p className="text-center py-8 text-muted-foreground">No team members yet</p>
@@ -346,7 +349,7 @@ export default function TeamManagement({
                         <p className="font-medium">{invitation.email}</p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="w-3 h-3" />
-                          <span>Invited {new Date(invitation.created_at).toLocaleDateString()}</span>
+                          <span>Invited {invitation.created_at ? new Date(invitation.created_at).toLocaleDateString() : 'Recently'}</span>
                           <span className="text-xs">•</span>
                           <span className="capitalize">{invitation.role}</span>
                           {invitation.expires_at && (

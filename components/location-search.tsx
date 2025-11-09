@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useRef, useEffect } from 'react'
-import { MapPin, Search, X } from 'lucide-react'
+import { MapPin, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useSchool } from '@/lib/school-context'
@@ -51,9 +51,15 @@ export function LocationSearch({ onLocationSelect, className, placeholder = 'Sea
       )
 
       const data = await response.json()
-      
+
       // Convert suggestions to our format
-      const suggestions = (data.suggestions || []).map((item: any) => ({
+      interface MapboxSuggestion {
+        mapbox_id: string
+        name: string
+        full_address?: string
+        place_formatted?: string
+      }
+      const suggestions = (data.suggestions || []).map((item: MapboxSuggestion) => ({
         id: item.mapbox_id,
         place_name: item.full_address || item.place_formatted || item.name,
         center: [0, 0], // Will get real coords on retrieve

@@ -1,17 +1,19 @@
 import { COLUMBIA_DEMO_EVENTS, COLUMBIA_DEMO_MARKERS } from './events/columbia'
 import { NYU_DEMO_EVENTS, NYU_DEMO_MARKERS } from './events/nyu'
+import { Event } from '@/types/event'
+import { MapMarker } from '../map-types'
 
 export interface SchoolConfig {
   slug: string
   name: string
   shortName: string
   emailDomain: string
-  
+
   // Branding
   primaryColor: string
   secondaryColor: string
   logoUrl: string | null
-  
+
   // Map Configuration
   mapCenter: {
     longitude: number
@@ -19,14 +21,14 @@ export interface SchoolConfig {
   }
   mapZoom: number
   mapBearing: number
-  
+
   // Meta
   description: string
   timezone: string
-  
+
   // Sample Data (for demo)
-  sampleEvents: any[]
-  sampleMarkers: any[]
+  sampleEvents: Event[]
+  sampleMarkers: MapMarker[]
 }
 
 const COLUMBIA: SchoolConfig = {

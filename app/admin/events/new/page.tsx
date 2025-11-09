@@ -4,12 +4,28 @@ import { getCurrentUser, getUserOrganizations } from '@/lib/data/auth'
 import { EventForm } from '@/components/forms/event-form'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { createAdminClient } from '@/utils/supabase/adminClient'
 
 export default async function NewEventPage() {
   const user = await getCurrentUser()
   const organizations = await getUserOrganizations(user!.id)
 
   if (organizations.length === 0) {
+    redirect('/admin')
+  }
+
+  // Use first organization (TODO: add organization selector if user has multiple)
+  const organization = organizations[0]
+  const supabase = createAdminClient()
+
+  // Get school info
+  const { data: school } = await supabase
+    .from('schools')
+    .select('id, slug')
+    .eq('id', organization.school_id)
+    .single()
+
+  if (!school) {
     redirect('/admin')
   }
 
@@ -25,11 +41,17 @@ export default async function NewEventPage() {
 
         <h1 className="text-3xl font-bold mb-2">Create Event</h1>
         <p className="text-muted-foreground">
-          Add a new event for your organization
+          Add a new event for {organization.name}
         </p>
       </div>
 
-      <EventForm organizations={organizations} />
+      <EventForm
+        organizationId={organization.id}
+        organizationName={organization.name}
+        schoolId={school.id}
+        schoolSlug={school.slug}
+        redirectUrl="/admin/events"
+      />
     </div>
   )
 }

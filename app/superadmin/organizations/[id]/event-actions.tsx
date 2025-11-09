@@ -38,9 +38,9 @@ export function EventActions({ eventId, organizationId, eventTitle }: EventActio
 
       toast.success('Event deleted successfully')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting event:', error)
-      toast.error(`Failed to delete event: ${error.message}`)
+      toast.error(`Failed to delete event: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setDeleting(false)
     }
   }

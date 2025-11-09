@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 import { LogOut, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { DbOrganization } from '@/types/database-helpers'
 
 interface AdminNavProps {
-  user: any
-  organizations: any[]
+  user: { id: string; email?: string }
+  organizations: DbOrganization[]
 }
 
 export default function AdminNav({ user, organizations }: AdminNavProps) {

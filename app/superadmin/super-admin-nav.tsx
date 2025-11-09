@@ -14,7 +14,7 @@ interface BreadcrumbItem {
 }
 
 interface SuperAdminNavProps {
-  user: any
+  user: { id: string; email?: string }
   breadcrumbs?: BreadcrumbItem[]
 }
 
@@ -26,8 +26,12 @@ export default function SuperAdminNav({ user, breadcrumbs: propBreadcrumbs }: Su
   // Check for breadcrumbs from global scope (set by nested layouts)
   React.useEffect(() => {
     const interval = setInterval(() => {
-      if (typeof window !== 'undefined' && (window as any).__superadmin_breadcrumbs) {
-        setBreadcrumbs((window as any).__superadmin_breadcrumbs)
+      const globalBreadcrumbs = typeof window !== 'undefined'
+        ? (window as Window & { __superadmin_breadcrumbs?: BreadcrumbItem[] | null }).__superadmin_breadcrumbs
+        : null
+
+      if (globalBreadcrumbs) {
+        setBreadcrumbs(globalBreadcrumbs)
       } else if (!propBreadcrumbs) {
         setBreadcrumbs(undefined)
       }
@@ -46,7 +50,6 @@ export default function SuperAdminNav({ user, breadcrumbs: propBreadcrumbs }: Su
     { href: '/superadmin', label: 'Overview' },
     { href: '/superadmin/organizations', label: 'Organizations' },
     { href: '/superadmin/schools', label: 'Schools' },
-    { href: '/superadmin/users', label: 'Users' },
     { href: '/superadmin/events', label: 'Events' },
     { href: '/superadmin/settings', label: 'Settings' },
   ]

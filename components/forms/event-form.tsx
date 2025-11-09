@@ -25,13 +25,21 @@ import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { createClient } from '@/utils/supabase/client'
 import { LocationSearch } from './location-search'
+import { DbEvent } from '@/types/database-helpers'
+
+interface LocationData {
+  venue_name: string
+  venue_address: string
+  latitude: number
+  longitude: number
+}
 
 interface EventFormProps {
   organizationId: string
   organizationName: string
   schoolId: string
   schoolSlug?: string
-  event?: any
+  event?: DbEvent
   redirectUrl: string
 }
 
@@ -84,12 +92,12 @@ export function EventForm({
   )
 
   // Utility function to update form fields
-  const updateField = (field: string, value: any) => {
+  const updateField = (field: string, value: string | boolean | null) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   // Handler: Location selection
-  const handleLocationSelect = (location: any) => {
+  const handleLocationSelect = (location: LocationData) => {
     setFormData(prev => ({
       ...prev,
       venue_name: location.venue_name,
@@ -139,9 +147,9 @@ export function EventForm({
 
       updateField('image_url', publicUrl)
       toast.success('Image uploaded successfully')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error uploading image:', error)
-      toast.error(`Failed to upload image: ${error.message}`)
+      toast.error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setUploading(false)
     }
@@ -229,9 +237,9 @@ export function EventForm({
       // Navigate back to redirect URL
       router.push(redirectUrl)
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving event:', error)
-      toast.error(error.message || 'Failed to save event. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to save event. Please try again.')
       setLoading(false)
     }
   }

@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { createAdminClient } from '@/utils/supabase/adminClient'
 import { Building2, School, Users, Calendar, ArrowRight } from 'lucide-react'
 

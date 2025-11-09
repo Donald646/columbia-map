@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 import { UserPlus, Trash2, Shield } from 'lucide-react'
 import { toast } from 'sonner'
-
 interface SuperAdminManagerProps {
   currentUserId: string
-  superAdmins: any[]
-  allUsers: any[]
+  superAdmins: { id: string; email: string }[]
+  allUsers: { id: string; email: string }[]
 }
 
 export default function SuperAdminManager({ currentUserId, superAdmins, allUsers }: SuperAdminManagerProps) {
@@ -42,9 +41,9 @@ export default function SuperAdminManager({ currentUserId, superAdmins, allUsers
       setShowAddForm(false)
       setSelectedUserId('')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding super admin:', error)
-      toast.error(`Failed to add super admin: ${error.message}`)
+      toast.error(`Failed to add super admin: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -66,9 +65,9 @@ export default function SuperAdminManager({ currentUserId, superAdmins, allUsers
 
       toast.success('Super admin removed successfully!')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error removing super admin:', error)
-      toast.error(`Failed to remove super admin: ${error.message}`)
+      toast.error(`Failed to remove super admin: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -175,7 +174,7 @@ export default function SuperAdminManager({ currentUserId, superAdmins, allUsers
 
         {superAdmins.length === 0 && (
           <p className="text-center py-8 text-muted-foreground">
-            No super admins found. This shouldn't happen!
+            No super admins found. This shouldn&apos;t happen!
           </p>
         )}
       </div>

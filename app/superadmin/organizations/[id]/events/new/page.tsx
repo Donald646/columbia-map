@@ -27,7 +27,7 @@ export default async function NewEventPage({ params }: { params: { id: string } 
     redirect('/superadmin/organizations')
   }
 
-  const schoolSlug = org.schools?.slug || 'columbia'
+  const schoolSlug = (Array.isArray(org.schools) ? org.schools[0]?.slug : (org.schools as { id: string; slug: string })?.slug) || 'columbia'
 
   return (
     <div className="max-w-4xl mx-auto">

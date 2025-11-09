@@ -5,9 +5,15 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 import { CheckCircle2, XCircle, Building2, Shield, Crown } from 'lucide-react'
+import { DbInvitation } from '@/types/database-helpers'
 
 interface InvitationsListProps {
-  invitations: any[]
+  invitations: (DbInvitation & {
+    organizations?: {
+      name: string
+      description: string | null
+    } | null
+  })[]
   userId: string
 }
 
@@ -15,7 +21,7 @@ export default function InvitationsList({ invitations, userId }: InvitationsList
   const router = useRouter()
   const [processing, setProcessing] = useState<string | null>(null)
 
-  const handleAccept = async (invitation: any) => {
+  const handleAccept = async (invitation: InvitationsListProps['invitations'][0]) => {
     setProcessing(invitation.id)
 
     try {
@@ -44,9 +50,9 @@ export default function InvitationsList({ invitations, userId }: InvitationsList
       // Redirect to admin dashboard
       router.push('/admin')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error accepting invitation:', error)
-      alert(`Failed to accept invitation: ${error.message}`)
+      alert(`Failed to accept invitation: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setProcessing(null)
     }
   }
@@ -65,9 +71,9 @@ export default function InvitationsList({ invitations, userId }: InvitationsList
       if (error) throw error
 
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error declining invitation:', error)
-      alert(`Failed to decline invitation: ${error.message}`)
+      alert(`Failed to decline invitation: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setProcessing(null)
     }
   }

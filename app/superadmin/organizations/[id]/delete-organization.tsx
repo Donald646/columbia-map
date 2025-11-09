@@ -72,9 +72,9 @@ export function DeleteOrganization({ organizationId, organizationName }: DeleteO
       toast.success('Organization deleted successfully')
       router.push('/superadmin/organizations')
       router.refresh()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting organization:', error)
-      toast.error(`Failed to delete organization: ${error.message}`)
+      toast.error(`Failed to delete organization: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setDeleting(false)
     }
   }

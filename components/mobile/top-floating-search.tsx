@@ -1,6 +1,5 @@
 'use client'
 
-import { MapPin } from 'lucide-react'
 import { LocationSearch } from '@/components/location-search'
 
 interface TopFloatingSearchProps {

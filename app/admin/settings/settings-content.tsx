@@ -6,14 +6,15 @@ import { OrganizationForm } from '@/components/forms/organization-form'
 import { Pencil } from 'lucide-react'
 import TeamManagement from './team-management'
 import Image from 'next/image'
+import { DbOrganization, DbOrganizationAdminWithUser, DbInvitation, DbSchool } from '@/types/database-helpers'
 
 interface SettingsContentProps {
-  organization: any
+  organization: DbOrganization
   currentUserId: string
   currentUserRole: string
-  admins: any[]
-  invitations: any[]
-  schools: any[]
+  admins: DbOrganizationAdminWithUser[]
+  invitations: DbInvitation[]
+  schools: DbSchool[]
 }
 
 export default function SettingsContent({

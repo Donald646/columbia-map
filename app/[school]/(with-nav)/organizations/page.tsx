@@ -1,6 +1,7 @@
-import { createClient } from '@/utils/supabase/server'
+import { getOrganizationsBySchool } from '@/lib/data/organizations'
+import { getSchool } from '@/lib/data/events'
 import { notFound } from 'next/navigation'
-import { CheckCircle, Search } from 'lucide-react'
+import { BadgeCheck, Search } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
@@ -9,45 +10,29 @@ export default async function OrganizationsPage({
   params,
   searchParams
 }: {
-  params: { school: string }
-  searchParams: { search?: string }
+  params: Promise<{ school: string }>
+  searchParams: Promise<{ search?: string }>
 }) {
-  const supabase = await createClient()
+  const { school: schoolSlug } = await params
+  const { search } = await searchParams
 
-  // Get school
-  const { data: school } = await supabase
-    .from('schools')
-    .select('id, name, slug')
-    .eq('slug', params.school)
-    .single()
+  // Get school and organizations in parallel
+  const [school, organizations] = await Promise.all([
+    getSchool(schoolSlug),
+    getOrganizationsBySchool(schoolSlug, { searchQuery: search })
+  ])
 
   if (!school) {
     notFound()
   }
 
-  // Build query
-  let query = supabase
-    .from('organizations')
-    .select('*')
-    .eq('school_id', school.id)
-    .eq('status', 'active')
-    .order('verified', { ascending: false })
-    .order('name', { ascending: true })
-
-  // Apply search filter
-  if (searchParams.search) {
-    query = query.ilike('name', `%${searchParams.search}%`)
-  }
-
-  const { data: organizations } = await query
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b bg-card">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <h1 className="text-4xl font-bold mb-2">Organizations</h1>
-          <p className="text-muted-foreground mb-6">
+      <div className="bg-background">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h1 className="text-4xl font-bold mb-3">Organizations</h1>
+          <p className="text-muted-foreground mb-8">
             Discover student organizations at {school.name}
           </p>
 
@@ -59,7 +44,7 @@ export default async function OrganizationsPage({
                 type="search"
                 name="search"
                 placeholder="Search organizations..."
-                defaultValue={searchParams.search}
+                defaultValue={search}
                 className="pl-10"
               />
             </form>
@@ -70,16 +55,11 @@ export default async function OrganizationsPage({
       {/* Organizations Grid */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         {organizations && organizations.length > 0 ? (
-          <>
-            <p className="text-sm text-muted-foreground mb-6">
-              {organizations.length} organization{organizations.length !== 1 ? 's' : ''} found
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {organizations.map((org) => (
                 <Link
                   key={org.id}
-                  href={`/${params.school}/organizations/${org.slug}`}
+                  href={`/${schoolSlug}/organizations/${org.slug}`}
                   className="block"
                 >
                   <div className="border rounded-lg p-6 hover:border-primary transition-colors bg-card h-full">
@@ -108,7 +88,7 @@ export default async function OrganizationsPage({
                             {org.name}
                           </h3>
                           {org.verified && (
-                            <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                            <BadgeCheck className="w-5 h-5 text-blue-500 flex-shrink-0" />
                           )}
                         </div>
 
@@ -128,14 +108,13 @@ export default async function OrganizationsPage({
                   </div>
                 </Link>
               ))}
-            </div>
-          </>
+          </div>
         ) : (
           <div className="text-center py-12 border border-dashed rounded-lg">
             <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No organizations found</h3>
             <p className="text-sm text-muted-foreground">
-              {searchParams.search
+              {search
                 ? 'Try adjusting your search'
                 : 'No organizations available yet'}
             </p>

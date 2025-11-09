@@ -3,24 +3,11 @@
 import React from 'react'
 import { EventCard } from './event-card'
 import { cn } from '@/lib/utils'
-import { List } from 'lucide-react'
-
-interface Event {
-  id: string
-  title: string
-  startTime: string
-  endTime?: string
-  venue: string
-  distance?: string
-  category: string
-  isFree?: boolean
-  organizer?: string
-  organizationSlug?: string
-  imageUrl?: string
-}
+import { DbEventWithOrg } from '@/types/database-helpers'
+import { formatTime } from '@/lib/utils/transform'
 
 interface EventListProps {
-  events?: Event[]
+  events?: DbEventWithOrg[]
   schoolSlug?: string
   onEventClick?: (eventId: string) => void
   className?: string
@@ -28,55 +15,8 @@ interface EventListProps {
   showHeader?: boolean
 }
 
-const DEMO_EVENTS: Event[] = [
-  {
-    id: '1',
-    title: 'Butler Library Study Session',
-    startTime: '2:00 PM',
-    endTime: '4:00 PM',
-    venue: 'Butler Library',
-    distance: '0.1 mi',
-    category: 'academic',
-    isFree: true,
-    organizer: 'Columbia College',
-  },
-  {
-    id: '2',
-    title: 'Lerner Hall Mixer',
-    startTime: '6:00 PM',
-    endTime: '8:00 PM',
-    venue: 'Lerner Hall',
-    distance: '0.2 mi',
-    category: 'social',
-    isFree: true,
-    organizer: 'Student Affairs',
-  },
-  {
-    id: '3',
-    title: 'SEAS Career Fair Prep Workshop',
-    startTime: '3:00 PM',
-    endTime: '5:00 PM',
-    venue: 'Mudd Building',
-    distance: '0.3 mi',
-    category: 'career',
-    isFree: true,
-    organizer: 'SEAS',
-  },
-  {
-    id: '4',
-    title: 'Miller Theatre Concert: Contemporary Ensemble',
-    startTime: '7:30 PM',
-    endTime: '9:30 PM',
-    venue: 'Miller Theatre',
-    distance: '0.4 mi',
-    category: 'arts',
-    isFree: false,
-    organizer: 'Miller Theatre',
-  },
-]
-
 export function EventList({
-  events = DEMO_EVENTS,
+  events = [],
   schoolSlug,
   onEventClick,
   className,
@@ -116,8 +56,19 @@ export function EventList({
           {events.map((event) => (
             <EventCard
               key={event.id}
-              {...event}
+              id={event.id}
+              title={event.title}
+              description={event.description || undefined}
+              startTime={formatTime(event.starts_at)}
+              endTime={event.ends_at ? formatTime(event.ends_at) : undefined}
+              venue={event.venue_name || 'TBA'}
+              category={event.category || 'other'}
+              isFree={event.is_free ?? undefined}
+              organizer={event.organizations?.name}
+              organizationSlug={event.organizations?.slug}
               schoolSlug={schoolSlug}
+              imageUrl={event.image_url || undefined}
+              isOrgVerified={event.organizations?.verified}
               onClick={() => onEventClick?.(event.id)}
             />
           ))}
