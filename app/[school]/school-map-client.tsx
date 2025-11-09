@@ -250,7 +250,7 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
               <div className="p-4 space-y-3 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold">Events</h2>
-                  <Button
+                  {/* <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setFilterModalOpen(true)}
@@ -258,7 +258,7 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
                   >
                     <SlidersHorizontal className="w-4 h-4" />
                     Filter
-                  </Button>
+                  </Button> */}
                 </div>
 
                 <Input
@@ -294,7 +294,7 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
 
       {isMobile && (
         <>
-          <button
+          {/* <button
             onClick={() => setFilterModalOpen(true)}
             className="fixed top-4 left-4 z-40 bg-background rounded-full px-4 py-2 shadow-lg border hover:bg-muted transition-colors flex items-center gap-2"
             aria-label="Open filters"
@@ -306,7 +306,7 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
                 {[selectedCategory !== 'all', selectedTime !== 'all', selectedPrice !== 'all'].filter(Boolean).length}
               </span>
             )}
-          </button>
+          </button> */}
 
           {/* Organizations Link - Centered at Top */}
           <Link
@@ -433,6 +433,7 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
         isOpen={selectedEventId !== null}
         onClose={() => setSelectedEventId(null)}
         event={selectedEvent}
+        schoolSlug={schoolSlug}
       />
     </div>
   )

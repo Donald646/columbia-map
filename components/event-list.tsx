@@ -53,25 +53,32 @@ export function EventList({
           <div className="pt-6 pb-3">
             <h3 className="text-base font-bold">Today / Monday</h3>
           </div>
-          {events.map((event) => (
-            <EventCard
-              key={event.id}
-              id={event.id}
-              title={event.title}
-              description={event.description || undefined}
-              startTime={formatTime(event.starts_at)}
-              endTime={event.ends_at ? formatTime(event.ends_at) : undefined}
-              venue={event.venue_name || 'TBA'}
-              category={event.category || 'other'}
-              isFree={event.is_free ?? undefined}
-              organizer={event.organizations?.name}
-              organizationSlug={event.organizations?.slug}
-              schoolSlug={schoolSlug}
-              imageUrl={event.image_url || undefined}
-              isOrgVerified={event.organizations?.verified}
-              onClick={() => onEventClick?.(event.id)}
-            />
-          ))}
+          {events.map((event) => {
+            // Handle organizations being either an array or object from Supabase
+            const organization = Array.isArray(event.organizations)
+              ? event.organizations[0]
+              : event.organizations
+
+            return (
+              <EventCard
+                key={event.id}
+                id={event.id}
+                title={event.title}
+                description={event.description || undefined}
+                startTime={formatTime(event.starts_at)}
+                endTime={event.ends_at ? formatTime(event.ends_at) : undefined}
+                venue={event.venue_name || 'TBA'}
+                category={event.category || 'other'}
+                isFree={event.is_free ?? undefined}
+                organizer={organization?.name}
+                organizationSlug={organization?.slug}
+                schoolSlug={schoolSlug}
+                imageUrl={event.image_url || undefined}
+                isOrgVerified={organization?.verified}
+                onClick={() => onEventClick?.(event.id)}
+              />
+            )
+          })}
         </div>
       )}
     </div>

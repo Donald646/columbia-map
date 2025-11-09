@@ -6,20 +6,22 @@ import {
   Sheet,
   SheetContent,
 } from '@/components/ui/sheet'
-import { Drawer, DrawerContent } from '@/components/ui/drawer'
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { getGoogleMapsUrl, formatTime } from '@/lib/utils/transform'
 import { DbEventWithOrg } from '@/types/database-helpers'
+import { toast } from 'sonner'
 
 interface EventDetailSheetProps {
   isOpen: boolean
   onClose: () => void
   event?: DbEventWithOrg
+  schoolSlug: string
 }
 
-export function EventDetailSheet({ isOpen, onClose, event }: EventDetailSheetProps) {
+export function EventDetailSheet({ isOpen, onClose, event, schoolSlug }: EventDetailSheetProps) {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -31,7 +33,37 @@ export function EventDetailSheet({ isOpen, onClose, event }: EventDetailSheetPro
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/${schoolSlug}/events/${event?.id}`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event?.title || 'Event',
+          url: shareUrl,
+        })
+      } catch (err) {
+        // User cancelled or error occurred
+        console.log('Share cancelled or failed:', err)
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        toast.success('Link copied to clipboard!')
+      } catch (err) {
+        console.error('Failed to copy:', err)
+        toast.error('Failed to copy link')
+      }
+    }
+  }
+
   if (!event) return null
+
+  // Handle organizations being either an array or object from Supabase
+  const organization = Array.isArray(event.organizations)
+    ? event.organizations[0]
+    : event.organizations
 
   // Map database event to component fields
   const mappedEvent = {
@@ -43,8 +75,9 @@ export function EventDetailSheet({ isOpen, onClose, event }: EventDetailSheetPro
     venue: event.venue_name || 'TBA',
     address: event.venue_address,
     category: event.category || 'other',
-    organizer: event.organizations?.name,
-    isOrgVerified: event.organizations?.verified,
+    organizer: organization?.name,
+    organizerLogo: organization?.logo_url,
+    isOrgVerified: organization?.verified,
     isFree: event.is_free ?? true,
     url: event.external_url,
     attendeeCount: event.rsvp_count || 0,
@@ -102,8 +135,18 @@ export function EventDetailSheet({ isOpen, onClose, event }: EventDetailSheetPro
         {/* Hosted by */}
         {mappedEvent.organizer && (
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-pink-500 flex items-center justify-center text-xs font-bold text-white">
-              {mappedEvent.organizer.charAt(0)}
+            <div className="w-5 h-5 rounded-full bg-pink-500 flex items-center justify-center text-xs font-bold text-white overflow-hidden">
+              {mappedEvent.organizerLogo ? (
+                <Image
+                  src={mappedEvent.organizerLogo}
+                  alt={mappedEvent.organizer}
+                  width={20}
+                  height={20}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                mappedEvent.organizer.charAt(0)
+              )}
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-sm">
@@ -180,18 +223,12 @@ export function EventDetailSheet({ isOpen, onClose, event }: EventDetailSheetPro
         )}
 
         {/* Buttons */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <Button
-            size="lg"
-            className="rounded-full bg-black text-white hover:bg-black/90 font-medium"
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Add to calendar
-          </Button>
+        <div className="w-full">
           <Button
             variant="outline"
             size="lg"
-            className="rounded-full font-medium"
+            className="rounded-full font-medium w-full"
+            onClick={handleShare}
           >
             <Share2 className="w-4 h-4 mr-2" />
             Share
@@ -203,8 +240,18 @@ export function EventDetailSheet({ isOpen, onClose, event }: EventDetailSheetPro
           <h3 className="text-sm font-semibold mb-3">Hosted By</h3>
           {mappedEvent.organizer && (
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-pink-500 flex items-center justify-center text-sm font-bold text-white">
-                {mappedEvent.organizer.charAt(0)}
+              <div className="w-9 h-9 rounded-full bg-pink-500 flex items-center justify-center text-sm font-bold text-white overflow-hidden">
+                {mappedEvent.organizerLogo ? (
+                  <Image
+                    src={mappedEvent.organizerLogo}
+                    alt={mappedEvent.organizer}
+                    width={36}
+                    height={36}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  mappedEvent.organizer.charAt(0)
+                )}
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="font-semibold text-sm">{mappedEvent.organizer}</div>
@@ -224,6 +271,7 @@ export function EventDetailSheet({ isOpen, onClose, event }: EventDetailSheetPro
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="h-[95vh] p-0">
+          <DrawerTitle className="sr-only">{mappedEvent.title}</DrawerTitle>
           {content}
         </DrawerContent>
       </Drawer>

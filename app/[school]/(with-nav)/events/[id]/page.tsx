@@ -1,11 +1,10 @@
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
-import { MapPin, Calendar, Share2, ExternalLink } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { MapPin, Calendar, ExternalLink, BadgeCheck } from 'lucide-react'
 import Image from 'next/image'
 import { getGoogleMapsUrl } from '@/lib/utils/transform'
 import { Metadata } from 'next'
+import { EventShareButton } from '@/components/event-share-button'
 
 export async function generateMetadata({
   params,
@@ -95,7 +94,9 @@ export default async function EventPage({
         name,
         slug,
         description,
-        website_url
+        website_url,
+        logo_url,
+        verified
       )
     `)
     .eq('id', id)
@@ -104,6 +105,11 @@ export default async function EventPage({
   if (error || !event) {
     notFound()
   }
+
+  // Handle organizations being either an array or object from Supabase
+  const organization = Array.isArray(event.organizations)
+    ? event.organizations[0]
+    : event.organizations
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,15 +138,33 @@ export default async function EventPage({
 
           <h1 className="text-3xl font-bold leading-tight">{event.title}</h1>
 
-          {event.organizations && (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
-                {event.organizations.name.charAt(0)}
+          {organization && (
+            <a
+              href={`/${schoolSlug}/organizations/${organization.slug}`}
+              className="flex items-center gap-3 hover:opacity-70 transition-opacity"
+            >
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold overflow-hidden">
+                {organization.logo_url ? (
+                  <Image
+                    src={organization.logo_url}
+                    alt={organization.name}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  organization.name.charAt(0)
+                )}
               </div>
-              <span className="text-sm text-muted-foreground">
-                Hosted by <span className="text-foreground font-medium">{event.organizations.name}</span>
-              </span>
-            </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-muted-foreground">
+                  Hosted by <span className="text-foreground font-medium">{organization.name}</span>
+                </span>
+                {organization.verified && (
+                  <BadgeCheck className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                )}
+              </div>
+            </a>
           )}
 
           <div className="grid grid-cols-2 gap-3">
@@ -198,15 +222,14 @@ export default async function EventPage({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button size="lg" className="rounded-full font-medium">
-              <Calendar className="w-4 h-4 mr-2" />
-              Add to calendar
-            </Button>
-            <Button variant="outline" size="lg" className="rounded-full font-medium">
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
+          <div className="w-full">
+            <EventShareButton
+              eventId={event.id}
+              eventTitle={event.title}
+              schoolSlug={schoolSlug}
+              variant="outline"
+              className="rounded-full font-medium w-full"
+            />
           </div>
 
           {event.description && (
@@ -215,18 +238,6 @@ export default async function EventPage({
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {event.description}
               </p>
-            </div>
-          )}
-
-          {event.organizations && (
-            <div className="space-y-3 pt-4">
-              <h3 className="text-sm font-semibold">Hosted By</h3>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
-                  {event.organizations.name.charAt(0)}
-                </div>
-                <div className="font-semibold text-sm">{event.organizations.name}</div>
-              </div>
             </div>
           )}
         </div>
@@ -253,52 +264,47 @@ export default async function EventPage({
             </div>
 
             {/* Presented by */}
-            {event.organizations && (
+            {organization && (
               <div className="space-y-2.5">
                 <div className="text-xs text-muted-foreground font-medium">Presented by</div>
-                <div className="flex items-start gap-2.5">
-                  <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold flex-shrink-0">
-                    {event.organizations.name.charAt(0)}
+                <a
+                  href={`/${schoolSlug}/organizations/${organization.slug}`}
+                  className="flex items-start gap-2.5 hover:opacity-70 transition-opacity"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden">
+                    {organization.logo_url ? (
+                      <Image
+                        src={organization.logo_url}
+                        alt={organization.name}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      organization.name.charAt(0)
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm">{event.organizations.name}</div>
-                    <Button variant="outline" size="sm" className="mt-1.5 h-7 text-xs">
-                      Subscribe
-                    </Button>
+                    <div className="flex items-center gap-1.5">
+                      <div className="font-semibold text-sm">{organization.name}</div>
+                      {organization.verified && (
+                        <BadgeCheck className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      )}
+                    </div>
                   </div>
-                </div>
-                {event.organizations.description && (
+                </a>
+                {organization.description && (
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    {event.organizations.description}
+                    {organization.description}
                   </p>
                 )}
               </div>
             )}
-
-            {/* Hosted By */}
-            {event.organizations && (
-              <div className="space-y-2.5 pt-3">
-                <div className="text-xs font-semibold">Hosted By</div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-semibold">
-                    {event.organizations.name.charAt(0)}
-                  </div>
-                  <div className="font-medium text-sm">{event.organizations.name}</div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Right Content with gradient background */}
-          <div className="space-y-5 bg-gradient-to-br from-green-50/50 via-yellow-50/30 to-green-50/50 dark:from-green-950/20 dark:via-yellow-950/10 dark:to-green-950/20 rounded-2xl p-8">
-            {/* Featured Badge */}
-            <div>
-              <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-100 text-xs">
-                Featured in {schoolSlug.charAt(0).toUpperCase() + schoolSlug.slice(1)}
-              </Badge>
-            </div>
-
-            {/* Title - Smaller */}
+          {/* Right Content */}
+          <div className="space-y-5">
+            {/* Title */}
             <h1 className="text-3xl font-bold leading-tight">{event.title}</h1>
 
             {/* Date & Location - Simpler, no card backgrounds */}
@@ -358,16 +364,15 @@ export default async function EventPage({
               </p>
             </div>
 
-            {/* Buttons */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <Button size="default" className="rounded-full font-medium text-sm h-10">
-                <Calendar className="w-4 h-4 mr-2" />
-                Add to calendar
-              </Button>
-              <Button variant="outline" size="default" className="rounded-full font-medium text-sm h-10">
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
+            {/* Share Button */}
+            <div className="w-full">
+              <EventShareButton
+                eventId={event.id}
+                eventTitle={event.title}
+                schoolSlug={schoolSlug}
+                variant="outline"
+                className="rounded-full font-medium text-sm h-10 w-full"
+              />
             </div>
 
             {/* About Event */}

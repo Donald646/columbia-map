@@ -26,6 +26,7 @@ export type DbEventWithOrg = DbEvent & {
     name: string
     slug: string
     verified: boolean
+    logo_url: string | null
   }
 }
 
