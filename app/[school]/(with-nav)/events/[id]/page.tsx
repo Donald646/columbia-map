@@ -56,24 +56,11 @@ export async function generateMetadata({
       description,
       type: 'website',
       siteName: 'EventsCU',
-      ...(event.image_url && {
-        images: [
-          {
-            url: event.image_url,
-            width: 1200,
-            height: 630,
-            alt: event.title,
-          },
-        ],
-      }),
     },
     twitter: {
       card: 'summary_large_image',
       title: event.title,
       description,
-      ...(event.image_url && {
-        images: [event.image_url],
-      }),
     },
   }
 }
