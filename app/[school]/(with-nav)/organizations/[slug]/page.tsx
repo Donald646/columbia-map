@@ -37,16 +37,6 @@ export async function generateMetadata({
       description,
       type: 'website',
       siteName: 'EventsCU',
-      ...(orgData.logo_url && {
-        images: [
-          {
-            url: orgData.logo_url,
-            width: 1200,
-            height: 630,
-            alt: orgData.name,
-          },
-        ],
-      }),
     },
     twitter: {
       card: 'summary',
