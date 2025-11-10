@@ -91,6 +91,11 @@ export function EventDetailSheet({ isOpen, onClose, event, schoolSlug }: EventDe
   const startDate = new Date(event.starts_at)
   const dateMonth = startDate.toLocaleString('en-US', { month: 'short' }).toUpperCase()
   const dateDay = startDate.getDate().toString()
+  const fullDate = startDate.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  })
 
   const content = (
     <div className="w-full h-full overflow-y-auto">
@@ -169,10 +174,10 @@ export function EventDetailSheet({ isOpen, onClose, event, schoolSlug }: EventDe
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-sm">
-                Wednesday, October 22
+                {fullDate}
               </div>
               <div className="text-xs text-muted-foreground">
-                {mappedEvent.startTime} - {mappedEvent.endTime || '1:30 PM'}
+                {mappedEvent.startTime} - {mappedEvent.endTime}
               </div>
             </div>
           </div>
