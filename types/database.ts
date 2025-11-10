@@ -477,8 +477,6 @@ export type Database = {
           email: string
           google_id: string | null
           id: string
-          is_school_admin: boolean | null
-          is_super_admin: boolean | null
           name: string | null
           primary_school_id: string | null
           role: Database["public"]["Enums"]["user_role"] | null
@@ -490,8 +488,6 @@ export type Database = {
           email: string
           google_id?: string | null
           id: string
-          is_school_admin?: boolean | null
-          is_super_admin?: boolean | null
           name?: string | null
           primary_school_id?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
@@ -503,8 +499,6 @@ export type Database = {
           email?: string
           google_id?: string | null
           id?: string
-          is_school_admin?: boolean | null
-          is_super_admin?: boolean | null
           name?: string | null
           primary_school_id?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null

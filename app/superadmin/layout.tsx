@@ -7,12 +7,16 @@ export default async function SuperAdminLayout({
 }: {
   children: React.ReactNode
 }) {
+  console.log('[SUPERADMIN LAYOUT] Starting layout render')
   const user = await requireSuperAdmin()
+  console.log('[SUPERADMIN LAYOUT] requireSuperAdmin returned:', !!user, user?.email)
 
   if (!user) {
+    console.log('[SUPERADMIN LAYOUT] No user, redirecting to login')
     redirect('/auth/login')
   }
 
+  console.log('[SUPERADMIN LAYOUT] User authenticated, rendering layout')
   return (
     <div className="min-h-screen bg-background">
       <SuperAdminNav user={user} />

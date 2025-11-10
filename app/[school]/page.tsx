@@ -95,7 +95,7 @@ export default async function SchoolMapPage({
     const [userData, orgAdmin] = await Promise.all([
       supabase
         .from('users')
-        .select('role, is_super_admin')
+        .select('role')
         .eq('id', user.id)
         .single(),
       supabase
@@ -103,11 +103,10 @@ export default async function SchoolMapPage({
         .select('organization_id')
         .eq('user_id', user.id)
         .limit(1)
-        .single()
     ])
 
     userRole = userData.data?.role || null
-    isOrgAdmin = !!orgAdmin.data
+    isOrgAdmin = !!(orgAdmin.data && orgAdmin.data.length > 0)
   }
 
   // Convert to markers

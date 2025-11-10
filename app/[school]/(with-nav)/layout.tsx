@@ -27,6 +27,8 @@ export default async function WithNavLayout({ children, params }: WithNavLayoutP
   let userRole = null
   let isOrgAdmin = false
 
+  console.log('[SCHOOL LAYOUT] User logged in:', !!user, 'email:', user?.email)
+
   if (user) {
     const [userData, orgAdmin] = await Promise.all([
       supabase
@@ -39,11 +41,12 @@ export default async function WithNavLayout({ children, params }: WithNavLayoutP
         .select('organization_id')
         .eq('user_id', user.id)
         .limit(1)
-        .single()
     ])
 
     userRole = userData.data?.role || null
-    isOrgAdmin = !!orgAdmin.data
+    isOrgAdmin = !!(orgAdmin.data && orgAdmin.data.length > 0)
+
+    console.log('[SCHOOL LAYOUT] User role:', userRole, 'isOrgAdmin:', isOrgAdmin, 'userData:', userData)
   }
 
   return (

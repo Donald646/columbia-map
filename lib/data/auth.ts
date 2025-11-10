@@ -15,11 +15,13 @@ export async function getCurrentUser() {
 export async function getUserRole(userId: string) {
   const supabase = await createClient()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('users')
     .select('role')
     .eq('id', userId)
     .single()
+
+  console.log('[getUserRole] userId:', userId, 'data:', data, 'error:', error)
 
   return data?.role || 'user'
 }
@@ -28,6 +30,7 @@ export async function getUserRole(userId: string) {
  * Check if user is a super admin (platform owner)
  */
 export async function isSuperAdmin(userId: string) {
+  console.log("Checking if user is a super admin for user id:", userId)
   const role = await getUserRole(userId)
   return role === 'super_admin'
 }
@@ -36,6 +39,7 @@ export async function isSuperAdmin(userId: string) {
  * Check if user is a school admin
  */
 export async function isSchoolAdmin(userId: string) {
+  console.log("Checking if user is a school admin for user id:", userId)
   const role = await getUserRole(userId)
   return role === 'school_admin' || role === 'super_admin'
 }
@@ -60,9 +64,11 @@ export async function getSuperAdmins() {
  */
 export async function requireSuperAdmin() {
   const user = await getCurrentUser()
+  console.log('[requireSuperAdmin] User:', user?.email, 'id:', user?.id)
   if (!user) return null
 
   const isSuper = await isSuperAdmin(user.id)
+  console.log('[requireSuperAdmin] isSuperAdmin result:', isSuper)
   if (!isSuper) return null
 
   return user
@@ -121,6 +127,10 @@ export async function requireAuth() {
 export async function requireAdmin() {
   const user = await requireAuth()
   if (!user) return null
+
+  // Super admins have access to everything
+  const isSuper = await isSuperAdmin(user.id)
+  if (isSuper) return user
 
   const isAdmin = await isUserAdmin(user.id)
   if (!isAdmin) return null

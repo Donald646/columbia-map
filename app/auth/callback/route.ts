@@ -15,18 +15,24 @@ export async function GET(request: Request) {
   const next = requestUrl.searchParams.get('next')
   const origin = requestUrl.origin
 
+  console.log('[AUTH CALLBACK] Starting callback with code:', !!code, 'next:', next)
+
   if (code) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
+      console.log('[AUTH CALLBACK] Error exchanging code:', error)
       return NextResponse.redirect(`${origin}/auth/login?error=auth_failed`)
     }
 
     const user = data.user
     const email = user?.email
 
+    console.log('[AUTH CALLBACK] User authenticated:', email)
+
     if (!email) {
+      console.log('[AUTH CALLBACK] No email found')
       await supabase.auth.signOut()
       return NextResponse.redirect(`${origin}/auth/login?error=no_email`)
     }
@@ -61,6 +67,8 @@ export async function GET(request: Request) {
     const hasAdminAccess = adminRecords && adminRecords.length > 0
     const hasPendingAdminInvite = adminRecords?.some(record => record.user_id === null)
 
+    console.log('[AUTH CALLBACK] Admin check - hasAdminAccess:', hasAdminAccess, 'hasPendingAdminInvite:', hasPendingAdminInvite)
+
     // Check if email domain is allowed (skip check if user has admin access or valid token)
     if (!hasAdminAccess && !hasValidInvitationToken) {
       const emailDomain = email.split('@')[1]
@@ -68,7 +76,10 @@ export async function GET(request: Request) {
         emailDomain === domain || emailDomain.endsWith(`.${domain}`)
       )
 
+      console.log('[AUTH CALLBACK] Domain check - emailDomain:', emailDomain, 'isAllowed:', isAllowedDomain)
+
       if (!isAllowedDomain) {
+        console.log('[AUTH CALLBACK] Invalid domain, signing out')
         await supabase.auth.signOut()
         return NextResponse.redirect(
           `${origin}/auth/login?error=invalid_domain&email=${encodeURIComponent(email)}`
@@ -84,16 +95,20 @@ export async function GET(request: Request) {
       .or(`domain.eq.${emailDomain},alternate_domains.cs.{${emailDomain}}`)
       .single()
 
-    // Check if user already exists to preserve their role and admin flags
+    console.log('[AUTH CALLBACK] School lookup - emailDomain:', emailDomain, 'school found:', school?.slug)
+
+    // Check if user already exists to preserve their role
     const { data: existingUser } = await supabase
       .from('users')
-      .select('id, role, is_super_admin, is_school_admin')
+      .select('id, role')
       .eq('id', user.id)
       .single()
 
+    console.log('[AUTH CALLBACK] Existing user check - exists:', !!existingUser, 'role:', existingUser?.role)
+
     // Update or insert user record with profile data
-    // Only set role/admin flags for NEW users, preserve for returning users
-    await supabase.from('users').upsert({
+    // Only set role for NEW users, preserve for returning users
+    const upsertData = {
       id: user.id,
       email: email,
       name: user.user_metadata?.full_name || user.user_metadata?.name,
@@ -101,9 +116,11 @@ export async function GET(request: Request) {
       google_id: user.user_metadata?.provider_id,
       primary_school_id: school?.id || null,
       role: existingUser?.role || 'user', // Preserve existing role, default to 'user' for new users
-      is_super_admin: existingUser?.is_super_admin || false, // Preserve super admin status
-      is_school_admin: existingUser?.is_school_admin || false, // Preserve school admin status
-    })
+    }
+
+    console.log('[AUTH CALLBACK] Upserting user with data:', upsertData)
+
+    await supabase.from('users').upsert(upsertData)
 
     // Link pending organization admin invitations to this user
     if (hasPendingAdminInvite) {
@@ -118,33 +135,57 @@ export async function GET(request: Request) {
     if (next && next.startsWith('/')) {
       // Validate that next is a safe redirect (starts with / but not //)
       if (!next.startsWith('//')) {
+        console.log('[AUTH CALLBACK] Redirecting to next parameter:', next)
         return NextResponse.redirect(`${origin}${next}`)
       }
     }
 
-    // Priority 2: Check for pending invitations
+    // Priority 2: Check if user is a super admin
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const isSuperAdmin = userData?.role === 'super_admin'
+    console.log('[AUTH CALLBACK] User role:', userData?.role, 'isSuperAdmin:', isSuperAdmin)
+
+    if (isSuperAdmin) {
+      console.log('[AUTH CALLBACK] Redirecting super admin to /superadmin')
+      return NextResponse.redirect(`${origin}/superadmin`)
+    }
+
+    // Priority 3: Check for pending invitations
     const { data: pendingInvitations } = await supabase
       .from('organization_invitations')
       .select('id')
       .eq('email', email)
       .eq('status', 'pending')
 
+    console.log('[AUTH CALLBACK] Pending invitations:', pendingInvitations?.length || 0)
+
     if (pendingInvitations && pendingInvitations.length > 0) {
       // Redirect to invitations page
+      console.log('[AUTH CALLBACK] Redirecting to /invitations')
       return NextResponse.redirect(`${origin}/invitations`)
     }
 
-    // Priority 3: If user has admin access, redirect to admin dashboard
+    // Priority 4: If user has admin access, redirect to admin dashboard
     if (hasAdminAccess) {
+      console.log('[AUTH CALLBACK] Redirecting to /admin')
       return NextResponse.redirect(`${origin}/admin`)
     }
 
-    // Priority 4: Redirect to user's school page if they have one
+    // Priority 5: Redirect to user's school page if they have one
     if (school) {
+      console.log('[AUTH CALLBACK] Redirecting to school page:', school.slug)
       return NextResponse.redirect(`${origin}/${school.slug}`)
     }
+
+    console.log('[AUTH CALLBACK] No specific redirect, going to home')
   }
 
   // Default redirect to home page
+  console.log('[AUTH CALLBACK] Default redirect to home')
   return NextResponse.redirect(`${origin}/`)
 }

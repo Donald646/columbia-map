@@ -51,7 +51,6 @@ export interface User {
   id: string
   email: string
   role?: string
-  is_super_admin?: boolean
 }
 
 export interface OrganizationAdmin {
