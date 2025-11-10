@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { MapProviderContext } from "@/lib/map-context";
-
+import { Analytics } from "@vercel/analytics/next"
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -52,6 +52,7 @@ export default function RootLayout({
       >
         <MapProviderContext>
           {children}
+          <Analytics />
         </MapProviderContext>
         <Toaster position="top-center" richColors />
       </body>
