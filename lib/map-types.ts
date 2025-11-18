@@ -17,7 +17,7 @@ export interface MapMarker {
   title: string
   category?: string
   color?: string
-  type?: 'school' | 'club' // New: distinguish event types
+  type?: 'school' | 'club' | 'dining_hall' // New: distinguish event types and dining halls
 }
 
 export interface MapConfig {

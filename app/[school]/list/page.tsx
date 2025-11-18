@@ -1,12 +1,10 @@
 import { getEvents } from '@/lib/data/events'
-import { eventToMarker } from '@/lib/utils/transform'
 import { getSchoolBySlug } from '@/lib/schools/config'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import SchoolMapClient from './school-map-client'
 import { Metadata } from 'next'
+import ListViewClient from './list-view-client'
 
-// Revalidate every 5 minutes for fresh event data
 export const revalidate = 300
 
 export async function generateMetadata({
@@ -31,26 +29,14 @@ export async function generateMetadata({
     .single()
 
   const schoolName = schoolData?.name || schoolConfig.name
-  const description = schoolData?.description || `Discover events happening at ${schoolName}. Find parties, club meetings, sports events, and more.`
 
   return {
-    title: `${schoolName} Events | EventsCU`,
-    description,
-    openGraph: {
-      title: `${schoolName} Events`,
-      description,
-      type: 'website',
-      siteName: 'EventsCU',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${schoolName} Events`,
-      description,
-    },
+    title: `${schoolName} Events - List View | EventsCU`,
+    description: `Browse all events at ${schoolName} in a list format.`,
   }
 }
 
-export default async function SchoolMapPage({
+export default async function ListViewPage({
   params,
   searchParams
 }: {
@@ -65,10 +51,8 @@ export default async function SchoolMapPage({
     notFound()
   }
 
-  // Parallelize all data fetching for performance
   const supabase = await createClient()
 
-  // Start all queries in parallel
   const [
     { data: { user } },
     events,
@@ -87,14 +71,6 @@ export default async function SchoolMapPage({
       .single()
   ])
 
-  // Fetch dining halls using school_id from database
-  // const { data: diningHalls } = await supabase
-  //   .from('dining_halls')
-  //   .select('id, name, slug, latitude, longitude')
-  //   .eq('school_id', schoolData?.id)
-  //   .eq('active', true)
-
-  // Now fetch user data if logged in (parallel)
   let userRole = null
   let isOrgAdmin = false
   let avatarUrl = null
@@ -127,28 +103,12 @@ export default async function SchoolMapPage({
     }
   }
 
-  // Convert to markers (events only - dining halls commented out)
-  const eventMarkers = events.map(eventToMarker)
-  // const diningHallMarkers = (diningHalls || []).map(hall => ({
-  //   id: `dining-${hall.id}`,
-  //   longitude: hall.longitude,
-  //   latitude: hall.latitude,
-  //   title: hall.name,
-  //   category: 'dining',
-  //   type: 'dining_hall' as const
-  // }))
-  const markers = eventMarkers // [...eventMarkers, ...diningHallMarkers]
-
   return (
-    <SchoolMapClient
+    <ListViewClient
       events={events}
-      markers={markers}
       schoolSlug={school}
       schoolName={schoolData?.name || schoolConfig.name}
       schoolHorizontalLogo={schoolData?.horizontal_logo_url || null}
-      campusCenter={schoolConfig.mapCenter}
-      initialZoom={schoolConfig.mapZoom}
-      initialBearing={schoolConfig.mapBearing}
       userRole={userRole}
       isOrgAdmin={isOrgAdmin}
       avatarUrl={avatarUrl}

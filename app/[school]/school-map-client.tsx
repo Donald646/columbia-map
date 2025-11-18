@@ -6,16 +6,26 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { EventList } from '@/components/event-list'
 import { EventDetailSheet } from '@/components/event-detail-sheet'
+import { DiningHallDetailSheet } from '@/components/dining-hall-detail-sheet'
 import { FilterModal } from '@/components/filter-modal'
 import { Button } from '@/components/ui/button'
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer'
-import { SlidersHorizontal, List, Locate, Search, X, LogIn } from 'lucide-react'
+import { SlidersHorizontal, List, Locate, Search, X, LogOut, Settings } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { DbEvent } from '@/lib/utils/transform'
 import { Marker } from '@/types/event'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { createClient } from '@/utils/supabase/client'
+import { MobileNav } from '@/components/mobile-nav'
 
 // Dynamic import for the heavy map component
 const MapView = dynamic(
@@ -44,11 +54,14 @@ interface SchoolMapClientProps {
   initialBearing: number
   userRole: string | null
   isOrgAdmin: boolean
+  avatarUrl: string | null
+  organizationName: string | null
 }
 
-export default function SchoolMapClient({ events, markers, schoolSlug, schoolName, schoolHorizontalLogo, campusCenter, initialBearing, userRole, isOrgAdmin }: SchoolMapClientProps) {
+export default function SchoolMapClient({ events, markers, schoolSlug, schoolName, schoolHorizontalLogo, campusCenter, initialBearing, userRole, isOrgAdmin, avatarUrl, organizationName }: SchoolMapClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const supabase = createClient()
 
   // Determine if user is any kind of admin
   const isAdmin = userRole === 'super_admin' || isOrgAdmin
@@ -60,7 +73,14 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
     return null
   }
 
+  // Handle logout
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.refresh()
+  }
+
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+  const [selectedDiningHallId, setSelectedDiningHallId] = useState<string | null>(null)
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true)
   const [drawerSnap, setDrawerSnap] = useState<number | string | null>(0.7)
@@ -134,7 +154,15 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
   }
 
   const handleMarkerClick = (markerId: string) => {
-    setSelectedEventId(markerId)
+    // Check if this is a dining hall marker (starts with 'dining-')
+    if (markerId.startsWith('dining-')) {
+      const diningHallId = markerId.replace('dining-', '')
+      setSelectedDiningHallId(diningHallId)
+      setSelectedEventId(null)
+    } else {
+      setSelectedEventId(markerId)
+      setSelectedDiningHallId(null)
+    }
   }
 
   const handleEventClick = (eventId: string) => {
@@ -189,8 +217,61 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
   // Find selected event from events array
   const selectedEvent = selectedEventId ? events.find(e => e.id === selectedEventId) : undefined
 
+  // Profile Dropdown Component
+  const ProfileDropdown = ({ size = 'default' }: { size?: 'default' | 'small' }) => {
+    const avatarSize = size === 'small' ? 'w-8 h-8' : 'w-9 h-9'
+    const innerSize = size === 'small' ? 'w-7 h-7' : 'w-8 h-8'
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className={`${avatarSize} rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors cursor-pointer`}
+            aria-label="Profile menu"
+          >
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt="Profile"
+                width={size === 'small' ? 32 : 36}
+                height={size === 'small' ? 32 : 36}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <div className={`${innerSize} rounded-full bg-background border-2 border-muted-foreground/20 flex items-center justify-center`}>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {userRole ? userRole.charAt(0).toUpperCase() : 'A'}
+                </span>
+              </div>
+            )}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          {userRole === 'super_admin' && (
+            <DropdownMenuItem onClick={() => router.push('/superadmin')} className="cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Super Admin Dashboard</span>
+            </DropdownMenuItem>
+          )}
+          {isOrgAdmin && organizationName && (
+            <DropdownMenuItem onClick={() => router.push('/admin')} className="cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Manage {organizationName}</span>
+            </DropdownMenuItem>
+          )}
+          {(userRole === 'super_admin' || isOrgAdmin) && <DropdownMenuSeparator />}
+          <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Logout</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
+      {/* Desktop Header */}
       <header className="hidden lg:block bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between relative">
@@ -227,21 +308,62 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
             </Link>
 
             <div className="flex items-center gap-2">
-              {isAdmin && getDashboardUrl() && (
+              {userRole || isOrgAdmin ? (
+                <ProfileDropdown />
+              ) : (
                 <Button
+                  onClick={() => router.push('/auth/login')}
                   variant="default"
                   size="sm"
-                  onClick={() => router.push(getDashboardUrl()!)}
-                  className="gap-2"
                 >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  Admin Dashboard
+                  Login
                 </Button>
               )}
             </div>
           </div>
         </div>
       </header>
+
+      {/* Mobile Header */}
+      <header className="lg:hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Link href={`/${schoolSlug}`} className="flex items-center gap-2.5">
+              <span className="font-bold text-lg tracking-tight">VENU</span>
+              {schoolHorizontalLogo ? (
+                <div className="relative h-6 w-auto max-w-[150px]">
+                  <Image
+                    src={schoolHorizontalLogo}
+                    alt={schoolName}
+                    width={150}
+                    height={24}
+                    className="object-contain h-full w-auto"
+                    priority
+                  />
+                </div>
+              ) : (
+                <span className="text-xs font-medium text-muted-foreground">{schoolName}</span>
+              )}
+            </Link>
+
+            {userRole || isOrgAdmin ? (
+              <ProfileDropdown size="small" />
+            ) : (
+              <Button
+                onClick={() => router.push('/auth/login')}
+                variant="default"
+                size="sm"
+                className="text-xs px-3 py-1 h-8"
+              >
+                Login
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Navigation Pills */}
+      <MobileNav schoolSlug={schoolSlug} />
 
       <div className="flex-1 flex overflow-hidden relative">
         <div className="flex-1 flex overflow-hidden bg-background">
@@ -292,31 +414,6 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
         </div>
       </div>
 
-      {isMobile && (
-        <>
-          {/* <button
-            onClick={() => setFilterModalOpen(true)}
-            className="fixed top-4 left-4 z-40 bg-background rounded-full px-4 py-2 shadow-lg border hover:bg-muted transition-colors flex items-center gap-2"
-            aria-label="Open filters"
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            <span className="text-sm font-medium">Filters</span>
-            {(selectedCategory !== 'all' || selectedTime !== 'all' || selectedPrice !== 'all') && (
-              <span className="bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {[selectedCategory !== 'all', selectedTime !== 'all', selectedPrice !== 'all'].filter(Boolean).length}
-              </span>
-            )}
-          </button> */}
-
-          {/* Organizations Link - Centered at Top */}
-          <Link
-            href={`/${schoolSlug}/organizations`}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-40 bg-background/95 backdrop-blur rounded-full px-4 py-2 shadow-lg border hover:bg-muted transition-colors text-sm font-medium"
-          >
-            Organizations
-          </Link>
-        </>
-      )}
 
       {isMobile && showRecenter && (
         <button
@@ -331,17 +428,6 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
         </button>
       )}
 
-      {/* Login button - shown when user is not logged in */}
-      {!userRole && !isOrgAdmin && (
-        <button
-          onClick={() => router.push('/auth/login')}
-          className="fixed top-4 right-4 z-40 bg-primary text-primary-foreground rounded-full px-4 py-2 shadow-lg hover:bg-primary/90 transition-colors flex items-center gap-2 font-medium"
-          aria-label="Login"
-        >
-          <LogIn className="w-4 h-4" />
-          <span className="text-sm">Login</span>
-        </button>
-      )}
 
       {isMobile && (
         <Drawer
@@ -433,6 +519,13 @@ export default function SchoolMapClient({ events, markers, schoolSlug, schoolNam
         isOpen={selectedEventId !== null}
         onClose={() => setSelectedEventId(null)}
         event={selectedEvent}
+        schoolSlug={schoolSlug}
+      />
+
+      <DiningHallDetailSheet
+        isOpen={selectedDiningHallId !== null}
+        onClose={() => setSelectedDiningHallId(null)}
+        diningHallId={selectedDiningHallId}
         schoolSlug={schoolSlug}
       />
     </div>

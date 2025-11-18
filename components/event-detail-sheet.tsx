@@ -5,6 +5,7 @@ import { MapPin, Calendar, Share2, ExternalLink, BadgeCheck } from 'lucide-react
 import {
   Sheet,
   SheetContent,
+  SheetTitle,
 } from '@/components/ui/sheet'
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,7 @@ import Image from 'next/image'
 import { getGoogleMapsUrl, formatTime } from '@/lib/utils/transform'
 import { DbEventWithOrg } from '@/types/database-helpers'
 import { toast } from 'sonner'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 
 interface EventDetailSheetProps {
   isOpen: boolean
@@ -139,18 +141,20 @@ export function EventDetailSheet({ isOpen, onClose, event, schoolSlug }: EventDe
 
         {/* Hosted by */}
         {mappedEvent.organizer && (
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-pink-500 flex items-center justify-center text-xs font-bold text-white overflow-hidden">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold overflow-hidden">
               {mappedEvent.organizerLogo ? (
                 <Image
                   src={mappedEvent.organizerLogo}
                   alt={mappedEvent.organizer}
-                  width={20}
-                  height={20}
+                  width={28}
+                  height={28}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                mappedEvent.organizer.charAt(0)
+                <div className="w-full h-full bg-pink-500 flex items-center justify-center text-white">
+                  {mappedEvent.organizer.charAt(0)}
+                </div>
               )}
             </div>
             <div className="flex items-center gap-1.5">
@@ -221,9 +225,10 @@ export function EventDetailSheet({ isOpen, onClose, event, schoolSlug }: EventDe
         {mappedEvent.description && (
           <div className="space-y-3 pt-2 border-t">
             <h3 className="text-sm font-semibold">About</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {mappedEvent.description}
-            </p>
+            <RichTextViewer
+              content={mappedEvent.description}
+              className="text-sm text-muted-foreground leading-relaxed"
+            />
           </div>
         )}
 
@@ -238,34 +243,6 @@ export function EventDetailSheet({ isOpen, onClose, event, schoolSlug }: EventDe
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
-        </div>
-
-        {/* Hosted By Section - NO BORDER */}
-        <div className="pt-4">
-          <h3 className="text-sm font-semibold mb-3">Hosted By</h3>
-          {mappedEvent.organizer && (
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-pink-500 flex items-center justify-center text-sm font-bold text-white overflow-hidden">
-                {mappedEvent.organizerLogo ? (
-                  <Image
-                    src={mappedEvent.organizerLogo}
-                    alt={mappedEvent.organizer}
-                    width={36}
-                    height={36}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  mappedEvent.organizer.charAt(0)
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="font-semibold text-sm">{mappedEvent.organizer}</div>
-                {mappedEvent.isOrgVerified && (
-                  <BadgeCheck className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -290,6 +267,7 @@ export function EventDetailSheet({ isOpen, onClose, event, schoolSlug }: EventDe
         side="right"
         className="w-full sm:max-w-[540px] p-0 overflow-y-auto"
       >
+        <SheetTitle className="sr-only">{mappedEvent.title}</SheetTitle>
         {content}
       </SheetContent>
     </Sheet>

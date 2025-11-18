@@ -36,21 +36,21 @@ const COLUMBIA: SchoolConfig = {
   name: 'Columbia University',
   shortName: 'Columbia',
   emailDomain: 'columbia.edu',
-  
+
   primaryColor: '#1E40AF',
   secondaryColor: '#93C5FD',
   logoUrl: null,
-  
+
   mapCenter: {
     longitude: -73.9626,
     latitude: 40.8075,
   },
   mapZoom: 15.5,
   mapBearing: 29,
-  
+
   description: 'Discover events and clubs at Columbia University',
   timezone: 'America/New_York',
-  
+
   sampleEvents: COLUMBIA_DEMO_EVENTS,
   sampleMarkers: COLUMBIA_DEMO_MARKERS,
 }
@@ -60,21 +60,21 @@ const NYU: SchoolConfig = {
   name: 'New York University',
   shortName: 'NYU',
   emailDomain: 'nyu.edu',
-  
+
   primaryColor: '#57068C',
   secondaryColor: '#B794F4',
   logoUrl: null,
-  
+
   mapCenter: {
     longitude: -73.9972,
     latitude: 40.7295,
   },
   mapZoom: 15.5,
   mapBearing: 0,
-  
+
   description: 'Discover events and clubs at NYU',
   timezone: 'America/New_York',
-  
+
   sampleEvents: NYU_DEMO_EVENTS,
   sampleMarkers: NYU_DEMO_MARKERS,
 }

@@ -15,14 +15,15 @@
 
 import { useState, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Loader2, MapPin, FileText, Globe } from 'lucide-react'
+import { Camera, Loader2, MapPin, FileText, Globe, X } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 import { createClient } from '@/utils/supabase/client'
 import { LocationSearch } from './location-search'
 import { DbEvent } from '@/types/database-helpers'
@@ -155,6 +156,44 @@ export function EventForm({
     }
   }
 
+  // Handler: Clear/remove image
+  const handleClearImage = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+
+    if (!formData.image_url) return
+
+    try {
+      const supabase = createClient()
+
+      // Extract the file path from the URL
+      const url = new URL(formData.image_url)
+      const pathMatch = url.pathname.match(/\/event-images\/(.+)/)
+
+      if (pathMatch) {
+        const filePath = pathMatch[1]
+
+        // Delete from storage
+        const { error } = await supabase.storage
+          .from('event-images')
+          .remove([filePath])
+
+        if (error) {
+          console.error('Error deleting image from storage:', error)
+          // Continue anyway to clear from form
+        }
+      }
+
+      // Clear from form
+      updateField('image_url', null)
+      toast.success('Image removed')
+    } catch (error) {
+      console.error('Error clearing image:', error)
+      // Still clear from form even if storage deletion fails
+      updateField('image_url', null)
+      toast.success('Image removed from form')
+    }
+  }
+
   // Handler: Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -269,7 +308,17 @@ export function EventForm({
           )}
 
           {/* Camera Button Overlay */}
-          <div className="absolute bottom-4 right-4">
+          <div className="absolute bottom-4 right-4 flex gap-2">
+            {formData.image_url && (
+              <button
+                type="button"
+                onClick={handleClearImage}
+                className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 hover:text-red-500 transition-colors"
+                title="Remove image"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
             <button
               type="button"
               onClick={(e) => {
@@ -398,25 +447,27 @@ export function EventForm({
                   <FileText className="w-5 h-5" />
                   <span>Event Description</span>
                 </div>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => updateField('description', e.target.value)}
-                  onBlur={() => {
-                    if (formData.description) {
-                      setIsEditingDescription(false)
-                    }
-                  }}
-                  placeholder="Tell people what your event is about..."
-                  rows={4}
-                  className="resize-none"
-                  autoFocus
+                <RichTextEditor
+                  content={formData.description}
+                  onChange={(html) => updateField('description', html)}
+                  placeholder="Tell people what your event is about... (paste links and they'll automatically work)"
+                  className="min-h-[100px]"
                 />
+                {formData.description && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingDescription(false)}
+                    className="text-xs text-muted-foreground hover:text-foreground mt-1"
+                  >
+                    Done editing
+                  </button>
+                )}
               </div>
             ) : formData.description ? (
               <div className="flex items-start gap-2">
                 <FileText className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{formData.description}</p>
+                  <RichTextViewer content={formData.description} className="text-sm" />
                   <button
                     type="button"
                     onClick={() => setIsEditingDescription(true)}

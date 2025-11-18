@@ -5,6 +5,7 @@ import { Clock, BadgeCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 
 interface EventCardProps {
   id: string
@@ -101,9 +102,9 @@ export function EventCardLuma({
 
           {/* Description - Truncated */}
           {description && (
-            <p className="text-xs text-muted-foreground line-clamp-1">
-              {description}
-            </p>
+            <div className="text-xs text-muted-foreground line-clamp-1">
+              <RichTextViewer content={description} className="text-xs" />
+            </div>
           )}
 
           {/* Time and Location together */}

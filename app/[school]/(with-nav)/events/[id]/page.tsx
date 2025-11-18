@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { getGoogleMapsUrl } from '@/lib/utils/transform'
 import { Metadata } from 'next'
 import { EventShareButton } from '@/components/event-share-button'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 
 export async function generateMetadata({
   params,
@@ -130,7 +131,7 @@ export default async function EventPage({
               href={`/${schoolSlug}/organizations/${organization.slug}`}
               className="flex items-center gap-3 hover:opacity-70 transition-opacity"
             >
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold overflow-hidden">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
                 {organization.logo_url ? (
                   <Image
                     src={organization.logo_url}
@@ -140,7 +141,9 @@ export default async function EventPage({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  organization.name.charAt(0)
+                  <div className="w-full h-full bg-primary flex items-center justify-center">
+                    {organization.name.charAt(0)}
+                  </div>
                 )}
               </div>
               <div className="flex items-center gap-1.5">
@@ -202,7 +205,7 @@ export default async function EventPage({
             })()}
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 text-center">
             <h3 className="text-sm font-semibold mb-1.5">Registration</h3>
             <p className="text-sm text-muted-foreground">
               Welcome! To join the event, please register below.
@@ -222,9 +225,10 @@ export default async function EventPage({
           {event.description && (
             <div className="space-y-3 pt-4">
               <h3 className="text-sm font-semibold">About</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {event.description}
-              </p>
+              <RichTextViewer
+                content={event.description}
+                className="text-sm text-muted-foreground leading-relaxed"
+              />
             </div>
           )}
         </div>
@@ -258,7 +262,7 @@ export default async function EventPage({
                   href={`/${schoolSlug}/organizations/${organization.slug}`}
                   className="flex items-start gap-2.5 hover:opacity-70 transition-opacity"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden">
                     {organization.logo_url ? (
                       <Image
                         src={organization.logo_url}
@@ -268,7 +272,9 @@ export default async function EventPage({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      organization.name.charAt(0)
+                      <div className="w-full h-full bg-primary flex items-center justify-center">
+                        {organization.name.charAt(0)}
+                      </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -344,7 +350,7 @@ export default async function EventPage({
             </div>
 
             {/* Registration */}
-            <div className="space-y-2.5">
+            <div className="space-y-2.5 text-center">
               <h2 className="text-base font-semibold">Registration</h2>
               <p className="text-sm text-muted-foreground">
                 Welcome! Please choose your desired ticket type:
@@ -366,9 +372,10 @@ export default async function EventPage({
             {event.description && (
               <div className="space-y-2.5 pt-4">
                 <h2 className="text-base font-semibold">About Event</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {event.description}
-                </p>
+                <RichTextViewer
+                  content={event.description}
+                  className="text-sm text-muted-foreground leading-relaxed"
+                />
               </div>
             )}
           </div>

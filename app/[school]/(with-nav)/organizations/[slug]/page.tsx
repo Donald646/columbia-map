@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Metadata } from 'next'
+import { DbEvent } from '@/types/database-helpers'
 
 export async function generateMetadata({
   params
@@ -182,7 +183,7 @@ export default async function OrganizationPage({
 
           {upcomingEvents && upcomingEvents.length > 0 ? (
             <div className="space-y-2">
-              {upcomingEvents.map((event) => (
+              {upcomingEvents.map((event: DbEvent) => (
                 <Link
                   key={event.id}
                   href={`/${schoolSlug}/events/${event.id}`}
@@ -247,7 +248,7 @@ export default async function OrganizationPage({
           <section>
             <h2 className="text-lg font-bold mb-4">Past</h2>
             <div className="space-y-2">
-              {pastEvents.map((event) => (
+              {pastEvents.map((event: DbEvent) => (
                 <div
                   key={event.id}
                   className="border rounded-lg p-2.5 opacity-50 hover:opacity-75 transition-opacity"

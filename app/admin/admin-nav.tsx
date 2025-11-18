@@ -46,7 +46,7 @@ export default function AdminNav({ user, organizations }: AdminNavProps) {
         <div className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
-              <Link href="/admin" className="font-semibold hover:underline">
+              <Link href="/" className="font-semibold hover:underline">
                 EventsCU
               </Link>
               {displayOrganization && (

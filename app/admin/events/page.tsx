@@ -4,6 +4,7 @@ import { Plus, Calendar, MapPin, Eye, Building2 } from 'lucide-react'
 import { getCurrentUser, getUserOrganizations } from '@/lib/data/auth'
 import { createAdminClient } from '@/utils/supabase/adminClient'
 import { formatTime, formatDate } from '@/lib/utils/transform'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 
 export default async function EventsPage() {
   const user = await getCurrentUser()
@@ -89,9 +90,9 @@ export default async function EventsPage() {
                     </div>
 
                     {event.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {event.description}
-                      </p>
+                      <div className="text-sm text-muted-foreground line-clamp-2">
+                        <RichTextViewer content={event.description} className="text-sm" />
+                      </div>
                     )}
                   </div>
 

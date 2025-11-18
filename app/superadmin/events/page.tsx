@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/utils/supabase/adminClient'
 import { Calendar, MapPin, Building2 } from 'lucide-react'
 import { formatTime, formatDate } from '@/lib/utils/transform'
+import { RichTextViewer } from '@/components/ui/rich-text-viewer'
 
 // Revalidate every 30 seconds for fresh event data
 export const revalidate = 30
@@ -84,9 +85,9 @@ export default async function EventsPage() {
                   </div>
 
                   {event.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {event.description}
-                    </p>
+                    <div className="text-sm text-muted-foreground line-clamp-2">
+                      <RichTextViewer content={event.description} className="text-sm" />
+                    </div>
                   )}
                 </div>
               </div>

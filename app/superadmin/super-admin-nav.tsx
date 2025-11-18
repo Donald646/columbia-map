@@ -51,6 +51,7 @@ export default function SuperAdminNav({ user, breadcrumbs: propBreadcrumbs }: Su
     { href: '/superadmin/organizations', label: 'Organizations' },
     { href: '/superadmin/schools', label: 'Schools' },
     { href: '/superadmin/events', label: 'Events' },
+    { href: '/superadmin/dining-halls', label: 'Dining Halls' },
     { href: '/superadmin/settings', label: 'Settings' },
   ]
 
@@ -69,7 +70,7 @@ export default function SuperAdminNav({ user, breadcrumbs: propBreadcrumbs }: Su
           <div className="flex items-center justify-between">
             {breadcrumbs && breadcrumbs.length > 0 ? (
               <div className="flex items-center gap-2 text-sm">
-                <Link href="/superadmin" className="font-semibold hover:underline">
+                <Link href="/" className="font-semibold hover:underline">
                   EventsCU
                 </Link>
                 {breadcrumbs.map((crumb, index) => (
@@ -86,7 +87,7 @@ export default function SuperAdminNav({ user, breadcrumbs: propBreadcrumbs }: Su
                 ))}
               </div>
             ) : (
-              <Link href="/superadmin" className="font-semibold text-lg" prefetch={true}>
+              <Link href="/" className="font-semibold text-lg" prefetch={true}>
                 EventsCU
               </Link>
             )}

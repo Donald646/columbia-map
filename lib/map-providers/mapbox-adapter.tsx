@@ -4,7 +4,7 @@ import React, { useCallback, useRef, useState, useEffect } from 'react'
 import Map, { Marker, NavigationControl, MapRef } from 'react-map-gl/mapbox'
 import { IMapProvider, MapViewState } from '../map-types'
 import { Button } from '@/components/ui/button'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, UtensilsCrossed } from 'lucide-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 export function MapboxAdapter({
@@ -123,10 +123,13 @@ export function MapboxAdapter({
       
       {markers.map((marker, index) => {
         const isUserLocation = marker.id === 'user-location'
+        const isDiningHall = marker.type === 'dining_hall'
 
-        // Color coding: school events = blue, club events = orange
+        // Color coding: school events = blue, club events = orange, dining halls = green
         const markerColor = marker.type === 'school'
           ? '#1E40AF'  // School blue
+          : marker.type === 'dining_hall'
+          ? '#10B981'  // Dining hall green
           : '#F97316'   // Club orange
 
         return (
@@ -157,6 +160,24 @@ export function MapboxAdapter({
                     boxShadow: '0 0 0 6px rgba(59, 130, 246, 0.3), 0 6px 12px rgba(0,0,0,0.3)',
                   }}
                 />
+              </div>
+            ) : isDiningHall ? (
+              <div
+                className="cursor-pointer group relative"
+                style={{
+                  animation: `markerPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) ${index * 0.05}s backwards`
+                }}
+              >
+                {/* Dining hall marker with utensils icon */}
+                <div
+                  className="relative flex items-center justify-center w-9 h-9 rounded-full group-hover:scale-110 transition-all duration-300 drop-shadow-lg"
+                  style={{
+                    backgroundColor: markerColor,
+                    border: '3px solid white',
+                  }}
+                >
+                  <UtensilsCrossed className="w-5 h-5 text-white" />
+                </div>
               </div>
             ) : (
               <div

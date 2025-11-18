@@ -1,4 +1,5 @@
 import { DbEventWithOrg } from '@/types/database-helpers'
+import { Marker } from '@/types/event'
 
 // Re-export for convenience
 export type DbEvent = DbEventWithOrg
@@ -73,14 +74,14 @@ export function transformEvent(row: DbEvent): TransformedEvent {
 /**
  * Transform event to map marker
  */
-export function eventToMarker(event: DbEvent) {
+export function eventToMarker(event: DbEvent): Marker {
   return {
     id: event.id,
     longitude: event.longitude || 0,
     latitude: event.latitude || 0,
     title: event.title,
     category: event.category || 'other',
-    type: event.organizations ? ('club' as const) : ('school' as const)
+    type: event.organization_id ? ('club' as const) : ('school' as const)
   }
 }
 

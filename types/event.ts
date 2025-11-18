@@ -27,7 +27,7 @@ export interface Marker {
   latitude: number
   title: string
   category: string
-  type: 'club' | 'school'
+  type: 'club' | 'school' | 'dining_hall'
 }
 
 export interface Organization {

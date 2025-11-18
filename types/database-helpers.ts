@@ -1,4 +1,4 @@
-import { Database } from './database'
+import { Database } from '../database.types'
 
 // Commonly used database row types
 export type DbEvent = Database['public']['Tables']['events']['Row']

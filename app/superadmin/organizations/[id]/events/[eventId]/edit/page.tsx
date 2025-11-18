@@ -8,19 +8,20 @@ import { EventForm } from '@/components/forms/event-form'
 export default async function EditEventPage({
   params
 }: {
-  params: { id: string; eventId: string }
+  params: Promise<{ id: string; eventId: string }>
 }) {
+  const { id, eventId } = await params
   const supabase = createAdminClient()
 
   // Get the event
   const { data: event } = await supabase
     .from('events')
     .select('*')
-    .eq('id', params.eventId)
+    .eq('id', eventId)
     .single()
 
   if (!event) {
-    redirect(`/superadmin/organizations/${params.id}`)
+    redirect(`/superadmin/organizations/${id}`)
   }
 
   // Get the organization with school info
@@ -35,7 +36,7 @@ export default async function EditEventPage({
         slug
       )
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!org) {
@@ -47,7 +48,7 @@ export default async function EditEventPage({
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <Link href={`/superadmin/organizations/${params.id}`}>
+        <Link href={`/superadmin/organizations/${id}`}>
           <Button variant="ghost" size="sm" className="gap-2 mb-4">
             <ArrowLeft className="w-4 h-4" />
             Back to {org.name}
@@ -66,7 +67,7 @@ export default async function EditEventPage({
         schoolId={org.school_id}
         schoolSlug={schoolSlug}
         event={event}
-        redirectUrl={`/superadmin/organizations/${params.id}`}
+        redirectUrl={`/superadmin/organizations/${id}`}
       />
     </div>
   )

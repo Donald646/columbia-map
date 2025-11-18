@@ -14,6 +14,97 @@ export type Database = {
   }
   public: {
     Tables: {
+      dining_hall_hours: {
+        Row: {
+          closes_at: string
+          day_of_week: number
+          dining_hall_id: string
+          id: string
+          meal_type: string
+          opens_at: string
+        }
+        Insert: {
+          closes_at: string
+          day_of_week: number
+          dining_hall_id: string
+          id?: string
+          meal_type: string
+          opens_at: string
+        }
+        Update: {
+          closes_at?: string
+          day_of_week?: number
+          dining_hall_id?: string
+          id?: string
+          meal_type?: string
+          opens_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dining_hall_hours_dining_hall_id_fkey"
+            columns: ["dining_hall_id"]
+            isOneToOne: false
+            referencedRelation: "dining_halls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dining_halls: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          created_at: string | null
+          description: string | null
+          external_id: string | null
+          id: string
+          image_url: string | null
+          latitude: number
+          longitude: number
+          name: string
+          school_id: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          created_at?: string | null
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          latitude: number
+          longitude: number
+          name: string
+          school_id: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          created_at?: string | null
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number
+          longitude?: number
+          name?: string
+          school_id?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dining_halls_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           capacity: number | null
@@ -109,6 +200,94 @@ export type Database = {
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_items: {
+        Row: {
+          allergens: string[] | null
+          description: string | null
+          dietary_prefs: string[] | null
+          dining_hall_id: string
+          first_seen_at: string | null
+          id: string
+          last_seen_at: string | null
+          name: string
+          station_name: string | null
+          times_served: number | null
+        }
+        Insert: {
+          allergens?: string[] | null
+          description?: string | null
+          dietary_prefs?: string[] | null
+          dining_hall_id: string
+          first_seen_at?: string | null
+          id?: string
+          last_seen_at?: string | null
+          name: string
+          station_name?: string | null
+          times_served?: number | null
+        }
+        Update: {
+          allergens?: string[] | null
+          description?: string | null
+          dietary_prefs?: string[] | null
+          dining_hall_id?: string
+          first_seen_at?: string | null
+          id?: string
+          last_seen_at?: string | null
+          name?: string
+          station_name?: string | null
+          times_served?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_dining_hall_id_fkey"
+            columns: ["dining_hall_id"]
+            isOneToOne: false
+            referencedRelation: "dining_halls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_schedules: {
+        Row: {
+          created_at: string | null
+          date: string
+          display_order: number | null
+          ends_at: string
+          id: string
+          meal_type: string
+          menu_item_id: string
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          display_order?: number | null
+          ends_at: string
+          id?: string
+          meal_type: string
+          menu_item_id: string
+          starts_at: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          display_order?: number | null
+          ends_at?: string
+          id?: string
+          meal_type?: string
+          menu_item_id?: string
+          starts_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_schedules_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
             referencedColumns: ["id"]
           },
         ]
@@ -720,6 +899,7 @@ export type Database = {
             }
             Returns: string
           }
+      earth: { Args: never; Returns: number }
       enablelongtransactions: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       geometry: { Args: { "": string }; Returns: unknown }
