@@ -1,5 +1,8 @@
 # EventsCU
 
+Link to deployed website: [EventsCU](https://www.eventscu.com/columbia)
+Link to Video: [Video for EventsCU](https://www.youtube.com/watch?v=uR3CGEMzbu0)
+
 **Discover campus events on an interactive map**
 
 EventsCU is a modern campus events discovery platform that helps college students find activities, clubs, and events happening at their university through an intuitive, map-based interface. Currently supporting Columbia University and NYU, the platform combines visual event discovery with geographical context to make it easy for students to see what's happening around them.
