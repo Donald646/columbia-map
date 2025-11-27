@@ -233,7 +233,20 @@ export function EventDetailSheet({ isOpen, onClose, event, schoolSlug }: EventDe
         )}
 
         {/* Buttons */}
-        <div className="w-full">
+        <div className="w-full space-y-2">
+          {mappedEvent.url && (
+            <Button
+              variant="default"
+              size="lg"
+              className="rounded-full font-medium w-full"
+              asChild
+            >
+              <a href={mappedEvent.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View Event Details
+              </a>
+            </Button>
+          )}
           <Button
             variant="outline"
             size="lg"

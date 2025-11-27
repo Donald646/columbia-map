@@ -15,7 +15,7 @@
 
 import { useState, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Loader2, MapPin, FileText, Globe, X } from 'lucide-react'
+import { Camera, Loader2, MapPin, FileText, Globe, X, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
@@ -62,6 +62,7 @@ export function EventForm({
   // UI toggle states
   const [showDescription, setShowDescription] = useState(!!event?.description)
   const [showLocation, setShowLocation] = useState(!!event?.venue_name)
+  const [showExternalLink, setShowExternalLink] = useState(!!event?.external_url)
   const [isEditingDescription, setIsEditingDescription] = useState(false)
 
   // Upload folder structure: organization_id/event_id
@@ -478,6 +479,49 @@ export function EventForm({
                 </div>
               </div>
             ) : null}
+          </div>
+
+          {/* External Link - Expandable */}
+          <div className="space-y-2">
+            {!showExternalLink ? (
+              <button
+                type="button"
+                onClick={() => setShowExternalLink(true)}
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+              >
+                <ExternalLink className="w-5 h-5" />
+                <span>Add External Link</span>
+              </button>
+            ) : (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
+                  <ExternalLink className="w-5 h-5" />
+                  <span>External Link</span>
+                </div>
+                <Input
+                  type="url"
+                  value={formData.external_url || ''}
+                  onChange={(e) => updateField('external_url', e.target.value)}
+                  placeholder="https://example.com/rsvp"
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Link to RSVP page, tickets, or more information
+                </p>
+                {formData.external_url && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateField('external_url', '')
+                      setShowExternalLink(false)
+                    }}
+                    className="text-xs text-muted-foreground hover:text-foreground mt-1"
+                  >
+                    Remove link
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Event Settings */}

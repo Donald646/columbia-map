@@ -6,6 +6,7 @@ import { getGoogleMapsUrl } from '@/lib/utils/transform'
 import { Metadata } from 'next'
 import { EventShareButton } from '@/components/event-share-button'
 import { RichTextViewer } from '@/components/ui/rich-text-viewer'
+import { Button } from '@/components/ui/button'
 
 export async function generateMetadata({
   params,
@@ -212,7 +213,20 @@ export default async function EventPage({
             </p>
           </div>
 
-          <div className="w-full">
+          <div className="w-full space-y-2">
+            {event.external_url && (
+              <Button
+                variant="default"
+                size="lg"
+                className="rounded-full font-medium w-full"
+                asChild
+              >
+                <a href={event.external_url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  View Event Details
+                </a>
+              </Button>
+            )}
             <EventShareButton
               eventId={event.id}
               eventTitle={event.title}
@@ -357,8 +371,21 @@ export default async function EventPage({
               </p>
             </div>
 
-            {/* Share Button */}
-            <div className="w-full">
+            {/* Action Buttons */}
+            <div className="w-full space-y-2">
+              {event.external_url && (
+                <Button
+                  variant="default"
+                  size="lg"
+                  className="rounded-full font-medium text-sm h-10 w-full"
+                  asChild
+                >
+                  <a href={event.external_url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Event Details
+                  </a>
+                </Button>
+              )}
               <EventShareButton
                 eventId={event.id}
                 eventTitle={event.title}
