@@ -2,6 +2,7 @@
 
 Link to deployed website: [EventsCU](https://www.eventscu.com/columbia)
 Link to Video: [Video for EventsCU](https://www.youtube.com/watch?v=uR3CGEMzbu0)
+Link to Higher Quality Video: https://youtu.be/5ZubEDRjLKE?feature=shared
 
 **Discover campus events on an interactive map**
 
